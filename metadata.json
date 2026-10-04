@@ -1,0 +1,6 @@
+{
+  "name": "The Lens Hut Admin Panel",
+  "description": "Modern, clean, and responsive admin dashboard for The Lens Hut eyewear store.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
