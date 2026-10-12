@@ -48,7 +48,7 @@ const ProductProvider = ({ children }) => {
     }
   };
   const getProduct = (id) => {
-    return products.find((p) => p.id === id);
+    return products.find((p) => p.id === id || p._id === id);
   };
   return <ProductContext.Provider
     value={{

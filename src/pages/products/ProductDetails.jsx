@@ -44,20 +44,15 @@ const ProductDetails = () => {
   />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {
-    /* Left Column: Image Gallery (5 cols) */
-  }
+        {/* Left Column: Image Perspectives (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs overflow-hidden">
             <div className="h-80 w-full rounded-xl bg-slate-50 flex items-center justify-center overflow-hidden">
               <img
-    src={activeImage}
-    alt={product.name}
-    className="h-full w-full object-cover transition-all duration-300"
-    onError={(e) => {
-      e.target.src = "https://placehold.co/600x400?text=Lens+Hut+Optics";
-    }}
-  />
+                src={activeImage}
+                alt={product.name}
+                className="h-full w-full object-cover transition-all duration-300"
+              />
             </div>
 
             {

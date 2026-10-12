@@ -3,13 +3,13 @@ const STORAGE_KEY = "thelenshut_orders";
 const loadOrders = () => {
   const data = localStorage.getItem(STORAGE_KEY);
   if (!data) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(initialMockOrders));
-    return initialMockOrders;
+    return [];
   }
   try {
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) ? parsed.filter((o) => !o.id?.startsWith('ord-00')) : [];
   } catch {
-    return initialMockOrders;
+    return [];
   }
 };
 const saveOrders = (orders) => {

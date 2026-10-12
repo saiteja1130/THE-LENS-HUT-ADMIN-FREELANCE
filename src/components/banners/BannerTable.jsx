@@ -30,13 +30,10 @@ const BannerTable = ({
       className: "w-24",
       render: (banner) => <div className="h-12 w-20 rounded-md bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
           <img
-        src={banner.imageUrl}
-        alt={banner.title}
-        className="h-full w-full object-cover"
-        onError={(e) => {
-          e.target.src = "https://placehold.co/160x90?text=Banner";
-        }}
-      />
+            src={banner.imageUrl}
+            alt={banner.title}
+            className="h-full w-full object-cover"
+          />
         </div>
     },
     {

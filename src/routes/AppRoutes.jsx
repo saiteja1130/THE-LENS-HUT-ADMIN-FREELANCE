@@ -15,6 +15,7 @@ import CustomerList from "../pages/customers/CustomerList";
 import CustomerDetails from "../pages/customers/CustomerDetails";
 import CouponList from "../pages/coupons/CouponList";
 import BannerList from "../pages/banners/BannerList";
+import CategoryList from "../pages/categories/CategoryList";
 import Settings from "../pages/settings/Settings";
 import NotFound from "../pages/errors/NotFound";
 const AppRoutes = () => {
@@ -48,6 +49,9 @@ const AppRoutes = () => {
         <Route path="/products/add" element={<AddProduct />} />
         <Route path="/products/:productId" element={<ProductDetails />} />
         <Route path="/products/:productId/edit" element={<EditProduct />} />
+
+        {/* Categories */}
+        <Route path="/categories" element={<CategoryList />} />
 
         {
     /* Orders */

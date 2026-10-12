@@ -12,6 +12,7 @@ import { ProductTable } from "../../components/products/ProductTable";
 import { Pagination } from "../../components/common/Pagination";
 import { EmptyState } from "../../components/common/EmptyState";
 import { Button } from "../../components/common/Button";
+import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { getStockStatus } from "../../utils/constants";
 const ProductList = () => {
   const navigate = useNavigate();
@@ -54,6 +55,9 @@ const ProductList = () => {
     paginatedItems,
     setPage
   } = usePagination(filteredProducts, { initialPageSize: 8 });
+  const [productToDelete, setProductToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const handleClearFilters = () => {
     setSearch("");
     setCategory("All");
@@ -61,12 +65,17 @@ const ProductList = () => {
     setStatus("All");
     setSearchParams({});
   };
-  const handleDeleteProduct = async (id) => {
+  const handleConfirmDelete = async () => {
+    if (!productToDelete) return;
+    setIsDeleting(true);
     try {
-      await deleteProduct(id);
+      await deleteProduct(productToDelete);
       toast.success("Product deleted successfully");
+      setProductToDelete(null);
     } catch {
       toast.error("Failed to delete product");
+    } finally {
+      setIsDeleting(false);
     }
   };
   return <PageContainer>
@@ -105,7 +114,7 @@ const ProductList = () => {
   /> : <div className="space-y-0">
           <ProductTable
     products={paginatedItems}
-    onDeleteProduct={handleDeleteProduct}
+    onDeleteProduct={(id) => setProductToDelete(id)}
     isLoading={loading}
   />
           <Pagination
@@ -116,6 +125,17 @@ const ProductList = () => {
     onPageChange={setPage}
   />
         </div>}
+
+      <ConfirmDialog
+        isOpen={Boolean(productToDelete)}
+        onClose={() => setProductToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Product"
+        message="Are you sure you want to permanently delete this product? This action cannot be undone and will remove it from all store catalogs."
+        confirmLabel="Delete Product"
+        isLoading={isDeleting}
+        variant="danger"
+      />
     </PageContainer>;
 };
 var stdin_default = ProductList;

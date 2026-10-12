@@ -29,13 +29,10 @@ const ProductTable = ({
       className: "w-16",
       render: (product) => <div className="h-12 w-12 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
           <img
-        src={product.images.front}
-        alt={product.name}
-        className="h-full w-full object-cover"
-        onError={(e) => {
-          e.target.src = "https://placehold.co/100x100?text=Lens+Hut";
-        }}
-      />
+            src={product.images?.front || product.primaryImage || ''}
+            alt={product.name}
+            className="h-full w-full object-cover"
+          />
         </div>
     },
     {

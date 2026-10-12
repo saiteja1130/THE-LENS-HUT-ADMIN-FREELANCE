@@ -1,28 +1,37 @@
 const initialMockDashboardStats = {
-  totalSales: 184590,
-  totalOrders: 64,
-  todayOrders: 5,
-  totalProducts: 48,
-  lowStockProducts: 3,
-  registeredCustomers: 128
+  totalSales: 0,
+  totalOrders: 0,
+  todayOrders: 0,
+  totalProducts: 0,
+  lowStockProducts: 0,
+  registeredCustomers: 0
 };
+
 const mockSalesChartWeekly = [
-  { date: "Mon", sales: 18400, orders: 8 },
-  { date: "Tue", sales: 24200, orders: 11 },
-  { date: "Wed", sales: 19800, orders: 7 },
-  { date: "Thu", sales: 32500, orders: 14 },
-  { date: "Fri", sales: 28900, orders: 12 },
-  { date: "Sat", sales: 41200, orders: 18 },
-  { date: "Sun", sales: 36800, orders: 15 }
+  { date: "Mon", sales: 0, orders: 0 },
+  { date: "Tue", sales: 0, orders: 0 },
+  { date: "Wed", sales: 0, orders: 0 },
+  { date: "Thu", sales: 0, orders: 0 },
+  { date: "Fri", sales: 0, orders: 0 },
+  { date: "Sat", sales: 0, orders: 0 },
+  { date: "Sun", sales: 0, orders: 0 }
 ];
+
 const mockSalesChartMonthly = [
-  { date: "Apr", sales: 112e3, orders: 48 },
-  { date: "May", sales: 135400, orders: 56 },
-  { date: "Jun", sales: 148900, orders: 62 },
-  { date: "Jul", sales: 162300, orders: 70 },
-  { date: "Aug", sales: 174500, orders: 74 },
-  { date: "Sep", sales: 184590, orders: 81 }
+  { date: "Jan", sales: 0, orders: 0 },
+  { date: "Feb", sales: 0, orders: 0 },
+  { date: "Mar", sales: 0, orders: 0 },
+  { date: "Apr", sales: 0, orders: 0 },
+  { date: "May", sales: 0, orders: 0 },
+  { date: "Jun", sales: 0, orders: 0 },
+  { date: "Jul", sales: 0, orders: 0 },
+  { date: "Aug", sales: 0, orders: 0 },
+  { date: "Sep", sales: 0, orders: 0 },
+  { date: "Oct", sales: 0, orders: 0 },
+  { date: "Nov", sales: 0, orders: 0 },
+  { date: "Dec", sales: 0, orders: 0 }
 ];
+
 export {
   initialMockDashboardStats,
   mockSalesChartMonthly,

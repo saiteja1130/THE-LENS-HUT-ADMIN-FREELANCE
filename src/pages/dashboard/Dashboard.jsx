@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   IndianRupee,
@@ -30,11 +31,47 @@ const Dashboard = () => {
   }, 0);
   const totalOrdersCount = orders.length;
   const todayStr = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
-  const todayOrders = orders.filter((o) => o.orderDate.startsWith(todayStr)).length;
+  const todayOrders = orders.filter((o) => o.orderDate?.startsWith(todayStr)).length;
   const totalProductsCount = products.length;
   const lowStockCount = products.filter((p) => p.stock > 0 && p.stock <= 5).length;
   const outOfStockCount = products.filter((p) => p.stock === 0).length;
   const totalCustomersCount = customers.length;
+
+  const weeklyData = useMemo(() => {
+    if (!orders || orders.length === 0) return mockSalesChartWeekly;
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const map = {};
+    days.forEach((d) => { map[d] = { date: d, sales: 0, orders: 0 }; });
+    orders.forEach((o) => {
+      if (o.orderStatus !== "Cancelled" && o.orderDate) {
+        const d = new Date(o.orderDate);
+        const dayName = days[d.getDay()];
+        if (map[dayName]) {
+          map[dayName].sales += (o.totalAmount || 0);
+          map[dayName].orders += 1;
+        }
+      }
+    });
+    return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => map[d]);
+  }, [orders]);
+
+  const monthlyData = useMemo(() => {
+    if (!orders || orders.length === 0) return mockSalesChartMonthly;
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const map = {};
+    months.forEach((m) => { map[m] = { date: m, sales: 0, orders: 0 }; });
+    orders.forEach((o) => {
+      if (o.orderStatus !== "Cancelled" && o.orderDate) {
+        const d = new Date(o.orderDate);
+        const monthName = months[d.getMonth()];
+        if (map[monthName]) {
+          map[monthName].sales += (o.totalAmount || 0);
+          map[monthName].orders += 1;
+        }
+      }
+    });
+    return months.map((m) => map[m]);
+  }, [orders]);
   return <PageContainer>
       <PageHeader
     title="Dashboard"
@@ -130,8 +167,8 @@ const Dashboard = () => {
   }
           <div className="grid grid-cols-1 gap-8">
             <SalesChart
-    weeklyData={mockSalesChartWeekly}
-    monthlyData={mockSalesChartMonthly}
+    weeklyData={weeklyData}
+    monthlyData={monthlyData}
   />
           </div>
 

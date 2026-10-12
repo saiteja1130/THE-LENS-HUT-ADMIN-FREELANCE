@@ -7,6 +7,7 @@ import { PageHeader } from "../../components/common/PageHeader";
 import { BannerTable } from "../../components/banners/BannerTable";
 import { BannerForm } from "../../components/banners/BannerForm";
 import { Modal } from "../../components/common/Modal";
+import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { EmptyState } from "../../components/common/EmptyState";
 import { Button } from "../../components/common/Button";
 const BannerList = () => {
@@ -14,6 +15,8 @@ const BannerList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bannerToDelete, setBannerToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const handleOpenAdd = () => {
     setEditingBanner(null);
     setIsModalOpen(true);
@@ -43,12 +46,17 @@ const BannerList = () => {
       setIsSubmitting(false);
     }
   };
-  const handleDelete = async (id) => {
+  const handleConfirmDelete = async () => {
+    if (!bannerToDelete) return;
+    setIsDeleting(true);
     try {
-      await deleteBanner(id);
-      toast.success("Banner deleted");
+      await deleteBanner(bannerToDelete);
+      toast.success("Banner deleted successfully");
+      setBannerToDelete(null);
     } catch {
       toast.error("Failed to delete banner");
+    } finally {
+      setIsDeleting(false);
     }
   };
   const handleToggle = async (id) => {
@@ -81,7 +89,7 @@ const BannerList = () => {
   /> : <BannerTable
     banners={banners}
     onEdit={handleOpenEdit}
-    onDelete={handleDelete}
+    onDelete={(id) => setBannerToDelete(id)}
     onToggleActive={handleToggle}
     isLoading={loading}
   />}
@@ -103,6 +111,17 @@ const BannerList = () => {
     isLoading={isSubmitting}
   />
       </Modal>
+
+      <ConfirmDialog
+        isOpen={Boolean(bannerToDelete)}
+        onClose={() => setBannerToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Banner"
+        message="Are you sure you want to delete this promotional banner? It will immediately stop appearing on the storefront."
+        confirmLabel="Delete Banner"
+        isLoading={isDeleting}
+        variant="danger"
+      />
     </PageContainer>;
 };
 var stdin_default = BannerList;

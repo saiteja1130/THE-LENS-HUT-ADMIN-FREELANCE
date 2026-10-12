@@ -1,69 +1,69 @@
-import { initialMockProducts } from "../data/mockProducts";
-const STORAGE_KEY = "thelenshut_products";
-const loadProducts = () => {
-  const data = localStorage.getItem(STORAGE_KEY);
-  if (!data) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(initialMockProducts));
-    return initialMockProducts;
-  }
-  try {
-    return JSON.parse(data);
-  } catch {
-    return initialMockProducts;
-  }
+import { api } from './api';
+
+const normalizeProduct = (p) => {
+  if (!p) return null;
+  return {
+    ...p,
+    id: p.id || p._id,
+  };
 };
-const saveProducts = (products) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-};
-const productService = {
+
+export const productService = {
   getProducts: async () => {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    return loadProducts();
-  },
-  getProductById: async (id) => {
-    await new Promise((resolve) => setTimeout(resolve, 150));
-    const products = loadProducts();
-    const product = products.find((p) => p.id === id);
-    return product || null;
-  },
-  createProduct: async (productData) => {
-    await new Promise((resolve) => setTimeout(resolve, 250));
-    const products = loadProducts();
-    const now = (/* @__PURE__ */ new Date()).toISOString();
-    const newProduct = {
-      ...productData,
-      id: `prod-${Date.now().toString(36)}`,
-      createdAt: now,
-      updatedAt: now
-    };
-    const updated = [newProduct, ...products];
-    saveProducts(updated);
-    return newProduct;
-  },
-  updateProduct: async (id, updates) => {
-    await new Promise((resolve) => setTimeout(resolve, 250));
-    const products = loadProducts();
-    const index = products.findIndex((p) => p.id === id);
-    if (index === -1) {
-      throw new Error("Product not found");
+    try {
+      const res = await api.get('/products/admin/all');
+      if (res.data?.success && Array.isArray(res.data.data)) {
+        return res.data.data.map(normalizeProduct);
+      }
+    } catch (err) {
+      console.warn('[ProductService] Backend unreachable:', err.message);
     }
-    const updatedProduct = {
-      ...products[index],
-      ...updates,
-      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
-    };
-    products[index] = updatedProduct;
-    saveProducts(products);
-    return updatedProduct;
+    return [];
   },
+
+  getProductById: async (id) => {
+    try {
+      const res = await api.get(`/products/${id}`);
+      if (res.data?.success && res.data.data) {
+        return normalizeProduct(res.data.data);
+      }
+    } catch (err) {
+      console.warn('[ProductService] Fetch by ID failed:', err.message);
+    }
+    return null;
+  },
+
+  createProduct: async (productData) => {
+    const res = await api.post('/products', productData);
+    if (res.data?.success && res.data.data) {
+      return normalizeProduct(res.data.data);
+    }
+    throw new Error(res.data?.message || 'Failed to create product');
+  },
+
+  updateProduct: async (id, updates) => {
+    const res = await api.put(`/products/${id}`, updates);
+    if (res.data?.success && res.data.data) {
+      return normalizeProduct(res.data.data);
+    }
+    throw new Error(res.data?.message || 'Failed to update product');
+  },
+
   deleteProduct: async (id) => {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    const products = loadProducts();
-    const filtered = products.filter((p) => p.id !== id);
-    saveProducts(filtered);
-    return true;
-  }
+    const res = await api.delete(`/products/${id}`);
+    if (res.data?.success) {
+      return true;
+    }
+    throw new Error(res.data?.message || 'Failed to delete product');
+  },
+
+  updateStock: async (id, stock) => {
+    const res = await api.patch(`/products/${id}/stock`, { stock });
+    if (res.data?.success) {
+      return res.data.data;
+    }
+    throw new Error(res.data?.message || 'Failed to update stock');
+  },
 };
-export {
-  productService
-};
+
+export default productService;

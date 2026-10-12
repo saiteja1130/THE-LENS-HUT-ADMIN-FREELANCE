@@ -1,5 +1,6 @@
 import React from "react";
 import { Eye, CheckCircle2, FileText, Download, ExternalLink } from "lucide-react";
+import { toast } from "react-toastify";
 
 const PrescriptionDetails = ({ prescription }) => {
   if (!prescription || !prescription.hasPrescription) {
@@ -122,7 +123,7 @@ const PrescriptionDetails = ({ prescription }) => {
           </div>
           <button
             type="button"
-            onClick={() => alert(`Accessing authenticated prescription file: ${rxFile.fileName || 'Prescription.pdf'}`)}
+            onClick={() => toast.info(`Accessing prescription document: ${rxFile.fileName || 'Prescription.pdf'}`)}
             className="font-bold underline text-emerald-800 hover:text-emerald-950 flex items-center gap-1 cursor-pointer"
           >
             <span>View Document</span>

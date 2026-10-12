@@ -97,13 +97,10 @@ const BannerForm = ({
   }
       {currentImageUrl && <div className="rounded-lg border border-slate-200 overflow-hidden bg-slate-50 h-28 flex items-center justify-center">
           <img
-    src={currentImageUrl}
-    alt="Preview"
-    className="w-full h-full object-cover"
-    onError={(e) => {
-      e.target.src = "https://placehold.co/600x200?text=Invalid+Image+URL";
-    }}
-  />
+            src={currentImageUrl}
+            alt="Preview"
+            className="w-full h-full object-cover"
+          />
         </div>}
 
       <div className="pt-2">

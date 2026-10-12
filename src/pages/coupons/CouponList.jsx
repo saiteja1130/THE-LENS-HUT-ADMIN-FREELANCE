@@ -7,6 +7,7 @@ import { PageHeader } from "../../components/common/PageHeader";
 import { CouponTable } from "../../components/coupons/CouponTable";
 import { CouponForm } from "../../components/coupons/CouponForm";
 import { Modal } from "../../components/common/Modal";
+import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { EmptyState } from "../../components/common/EmptyState";
 import { Button } from "../../components/common/Button";
 const CouponList = () => {
@@ -14,6 +15,8 @@ const CouponList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [couponToDelete, setCouponToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const handleOpenAdd = () => {
     setEditingCoupon(null);
     setIsModalOpen(true);
@@ -43,12 +46,17 @@ const CouponList = () => {
       setIsSubmitting(false);
     }
   };
-  const handleDelete = async (id) => {
+  const handleConfirmDelete = async () => {
+    if (!couponToDelete) return;
+    setIsDeleting(true);
     try {
-      await deleteCoupon(id);
-      toast.success("Coupon deleted");
+      await deleteCoupon(couponToDelete);
+      toast.success("Coupon deleted successfully");
+      setCouponToDelete(null);
     } catch {
       toast.error("Failed to delete coupon");
+    } finally {
+      setIsDeleting(false);
     }
   };
   return <PageContainer>
@@ -73,7 +81,7 @@ const CouponList = () => {
   /> : <CouponTable
     coupons={coupons}
     onEdit={handleOpenEdit}
-    onDelete={handleDelete}
+    onDelete={(id) => setCouponToDelete(id)}
     isLoading={loading}
   />}
 
@@ -94,6 +102,17 @@ const CouponList = () => {
     isLoading={isSubmitting}
   />
       </Modal>
+
+      <ConfirmDialog
+        isOpen={Boolean(couponToDelete)}
+        onClose={() => setCouponToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Coupon"
+        message="Are you sure you want to remove this discount coupon? Customers will no longer be able to apply it at checkout."
+        confirmLabel="Delete Coupon"
+        isLoading={isDeleting}
+        variant="danger"
+      />
     </PageContainer>;
 };
 var stdin_default = CouponList;
