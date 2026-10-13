@@ -34,7 +34,10 @@ export const productService = {
   },
 
   createProduct: async (productData) => {
-    const res = await api.post('/products', productData);
+    const isFormData = typeof FormData !== 'undefined' && productData instanceof FormData;
+    const res = await api.post('/products', productData, {
+      headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : undefined,
+    });
     if (res.data?.success && res.data.data) {
       return normalizeProduct(res.data.data);
     }
@@ -42,12 +45,16 @@ export const productService = {
   },
 
   updateProduct: async (id, updates) => {
-    const res = await api.put(`/products/${id}`, updates);
+    const isFormData = typeof FormData !== 'undefined' && updates instanceof FormData;
+    const res = await api.put(`/products/${id}`, updates, {
+      headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : undefined,
+    });
     if (res.data?.success && res.data.data) {
       return normalizeProduct(res.data.data);
     }
     throw new Error(res.data?.message || 'Failed to update product');
   },
+
 
   deleteProduct: async (id) => {
     const res = await api.delete(`/products/${id}`);

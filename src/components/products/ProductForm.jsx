@@ -48,11 +48,25 @@ const ProductForm = ({
 
   const [images, setImages] = useState(
     initialData?.images || {
-      front: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=600&q=80",
-      side: "https://images.unsplash.com/photo-1591076482161-42ce6da69f67?auto=format&fit=crop&w=600&q=80",
-      angle: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=600&q=80"
+      front: "",
+      side: "",
+      angle: ""
     }
   );
+
+  const [imageFiles, setImageFiles] = useState({
+    front: null,
+    side: null,
+    angle: null
+  });
+
+  const handleFileChange = (key, file) => {
+    setImageFiles((prev) => ({ ...prev, [key]: file }));
+  };
+
+  const handleUrlChange = (key, url) => {
+    setImages((prev) => ({ ...prev, [key]: url }));
+  };
 
   // Category Configuration State
   const [categoryConfig, setCategoryConfig] = useState(() => {
@@ -171,34 +185,52 @@ const ProductForm = ({
   };
 
   const onFormSubmit = async (data) => {
-    const payload = {
-      name: data.name,
-      sku: data.sku,
-      brand: data.brand,
-      productType,
-      category: data.category,
-      gender: data.gender,
-      description: data.description,
-      price: Number(data.price),
-      offerPrice: data.offerPrice ? Number(data.offerPrice) : void 0,
-      stock: Number(data.stock),
-      status: data.status,
-      images,
-      colors,
-      eyeglassesConfig: productType === "eyeglasses" ? categoryConfig : undefined,
-      contactLensConfig: productType === "contact-lens" ? categoryConfig : undefined,
-      sunglassesConfig: productType === "sunglasses" ? categoryConfig : undefined,
-      frameSpecifications: isFrameProduct
-        ? {
-            shape: data.shape,
-            frameType: data.frameType,
-            material: data.material,
-            size: data.size
-          }
-        : undefined
-    };
-    await onSubmit(payload);
+    const formData = new FormData();
+    formData.append("name", data.name);
+    if (data.sku) formData.append("sku", data.sku);
+    formData.append("brand", data.brand || "The Lens Hut Reserve");
+    formData.append("productType", productType);
+    formData.append("category", data.category);
+    formData.append("gender", data.gender || "Unisex");
+    formData.append("description", data.description || "");
+    formData.append("price", Number(data.price));
+    if (data.offerPrice) formData.append("offerPrice", Number(data.offerPrice));
+    formData.append("stock", Number(data.stock));
+    formData.append("status", data.status || "active");
+
+    // Append image files
+    if (imageFiles.front) formData.append("front", imageFiles.front);
+    if (imageFiles.side) formData.append("side", imageFiles.side);
+    if (imageFiles.angle) formData.append("angle", imageFiles.angle);
+
+    // Append existing images JSON for retention
+    formData.append("images", JSON.stringify(images));
+
+    // Append complex configuration objects
+    formData.append("colors", JSON.stringify(colors));
+    if (productType === "eyeglasses" && categoryConfig) {
+      formData.append("eyeglassesConfig", JSON.stringify(categoryConfig));
+    } else if (productType === "contact-lens" && categoryConfig) {
+      formData.append("contactLensConfig", JSON.stringify(categoryConfig));
+    } else if (productType === "sunglasses" && categoryConfig) {
+      formData.append("sunglassesConfig", JSON.stringify(categoryConfig));
+    }
+
+    if (isFrameProduct) {
+      formData.append(
+        "frameSpecifications",
+        JSON.stringify({
+          shape: data.shape,
+          frameType: data.frameType,
+          material: data.material,
+          size: data.size
+        })
+      );
+    }
+
+    await onSubmit(formData);
   };
+
 
   const watchedFormData = watch();
 
@@ -431,7 +463,12 @@ const ProductForm = ({
             <h2 className="text-base font-bold text-slate-900">Product Images</h2>
             <p className="text-xs text-slate-500">Multi-angle photography</p>
           </div>
-          <ProductImageUpload images={images} onChange={setImages} />
+          <ProductImageUpload
+            images={images}
+            imageFiles={imageFiles}
+            onFileChange={handleFileChange}
+            onUrlChange={handleUrlChange}
+          />
         </div>
 
         {/* Actions Bar with Live Preview */}
