@@ -45,23 +45,7 @@ const authService = {
         throw apiError;
       }
 
-      // Offline / fallback dev credentials
-      if (normalizedEmail === "admin@thelenshut.com" && password === "admin123") {
-        const admin = {
-          id: "adm-01",
-          name: "Store Administrator",
-          email: normalizedEmail,
-          role: "admin",
-          avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
-        };
-        const storage = rememberMe ? localStorage : sessionStorage;
-        storage.setItem(STORAGE_KEY_AUTH, JSON.stringify(admin));
-        localStorage.setItem(STORAGE_KEY_REMEMBER, JSON.stringify(rememberMe));
-        localStorage.setItem("thelenshut_auth_token", "admin_offline_jwt_token");
-        return admin;
-      }
-
-      throw new Error(apiError.response?.data?.message || "Invalid email or password.");
+      throw new Error(apiError.response?.data?.message || apiError.message || "Invalid email or password.");
     }
   },
 

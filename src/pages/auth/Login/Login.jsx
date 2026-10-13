@@ -41,11 +41,6 @@ const Login = () => {
     }
   };
 
-  const handleFillDemo = () => {
-    setValue("email", "admin@thelenshut.com");
-    setValue("password", "admin123");
-    setErrorMessage(null);
-  };
 
   return (
     <div className="w-full max-w-md mx-auto px-4">
@@ -109,14 +104,6 @@ const Login = () => {
               />
               <span className="text-xs text-slate-600 font-medium">Remember Me</span>
             </label>
-
-            <button
-              type="button"
-              onClick={handleFillDemo}
-              className="text-xs font-semibold text-[#E4232C] hover:text-[#C81E26] transition-colors cursor-pointer"
-            >
-              Fill Demo Login
-            </button>
           </div>
 
           <div className="pt-2">
@@ -133,12 +120,7 @@ const Login = () => {
           </div>
         </form>
 
-        <div className="mt-6 pt-5 border-t border-slate-100 text-center">
-          <p className="text-xs text-slate-400">
-            Default credentials: <span className="font-mono text-slate-600">admin@thelenshut.com</span> /{" "}
-            <span className="font-mono text-slate-600">admin123</span>
-          </p>
-        </div>
+
       </div>
     </div>
   );
