@@ -22,7 +22,7 @@ const Login = () => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      email: "admin@thelenshut.com",
+      email: "admin@gmail.com",
       password: "",
       rememberMe: true,
     },

@@ -158,13 +158,19 @@ const InvoicePreview = ({ order, isOpen, onClose }) => {
           {order.prescription?.hasPrescription && (
             <div className="mt-6 p-3 rounded bg-slate-50 border border-slate-200 text-xs">
               <span className="font-bold text-slate-800">Lens Specification: </span>
-              <span className="text-slate-600">
-                {order.prescription.lensPackage || "Standard Corrective Optics"} | Right: SPH{" "}
-                {order.prescription.rightEye?.sph} CYL {order.prescription.rightEye?.cyl} Axis{" "}
-                {order.prescription.rightEye?.axis} | Left: SPH {order.prescription.leftEye?.sph}{" "}
-                CYL {order.prescription.leftEye?.cyl} Axis {order.prescription.leftEye?.axis} | PD:{" "}
-                {order.prescription.pd}
-              </span>
+              {order.prescription.method === 'upload' || order.prescription.fileUrl ? (
+                <span className="text-slate-600 font-medium">
+                  {order.prescription.lensPackage || "Standard Corrective Optics"} | Doctor Prescription Uploaded ({order.prescription.fileName || "Doctor_Prescription.pdf"})
+                </span>
+              ) : (
+                <span className="text-slate-600">
+                  {order.prescription.lensPackage || "Standard Corrective Optics"} | Right: SPH{" "}
+                  {order.prescription.rightEye?.sph || '0.00'} CYL {order.prescription.rightEye?.cyl || '0.00'} Axis{" "}
+                  {order.prescription.rightEye?.axis || '-'} | Left: SPH {order.prescription.leftEye?.sph || '0.00'}{" "}
+                  CYL {order.prescription.leftEye?.cyl || '0.00'} Axis {order.prescription.leftEye?.axis || '-'} | PD:{" "}
+                  {order.prescription.pd || '63 mm'}
+                </span>
+              )}
             </div>
           )}
 

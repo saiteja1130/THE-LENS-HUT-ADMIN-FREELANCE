@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { Eye, Glasses, Package, Sun, Sparkles } from "lucide-react";
+import { toast } from "react-toastify";
+import { Eye, AlertCircle, ArrowRight } from "lucide-react";
 import {
   PRODUCT_CATEGORIES,
   GENDERS,
@@ -14,9 +15,9 @@ import { Input } from "../common/Input";
 import { Select } from "../common/Select";
 import { Button } from "../common/Button";
 import { ProductColorVariant } from "./ProductColorVariant";
-import { ProductImageUpload } from "./ProductImageUpload";
 import { CategoryConfigurationSection } from "./CategoryConfigurationSection";
 import { LiveProductPreviewModal } from "./LiveProductPreviewModal";
+import { categoryService } from "../../services/categoryService";
 
 const ProductForm = ({
   initialData,
@@ -26,6 +27,23 @@ const ProductForm = ({
 }) => {
   const navigate = useNavigate();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  // Categories fetched from backend database
+  const [dbCategories, setDbCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    categoryService.getCategories().then((cats) => {
+      if (isMounted) {
+        setDbCategories(cats || []);
+        setLoadingCategories(false);
+      }
+    }).catch(() => {
+      if (isMounted) setLoadingCategories(false);
+    });
+    return () => { isMounted = false; };
+  }, []);
 
   // Normalize initial productType
   const initialProductType =
@@ -40,67 +58,20 @@ const ProductForm = ({
 
   const [productType, setProductType] = useState(initialProductType);
 
-  const [colors, setColors] = useState(
-    initialData?.colors || [
-      { id: "c1", name: "Midnight Black", hex: "#0f172a" }
-    ]
-  );
+  // Colors start empty by default (no dummy Midnight Black)
+  const [colors, setColors] = useState(initialData?.colors || []);
 
-  const [images, setImages] = useState(
-    initialData?.images || {
-      front: "",
-      side: "",
-      angle: ""
-    }
-  );
-
-  const [imageFiles, setImageFiles] = useState({
-    front: null,
-    side: null,
-    angle: null
-  });
-
-  const handleFileChange = (key, file) => {
-    setImageFiles((prev) => ({ ...prev, [key]: file }));
-  };
-
-  const handleUrlChange = (key, url) => {
-    setImages((prev) => ({ ...prev, [key]: url }));
-  };
-
-  // Category Configuration State
+  // Category Configuration State - starts with no dummy optical packages or checked types
   const [categoryConfig, setCategoryConfig] = useState(() => {
     if (productType === "eyeglasses") {
       return (
         initialData?.eyeglassesConfig || {
-          lensTypes: ["frame-only", "single-vision", "progressive"],
-          availableLenses: [
-            {
-              id: "lens-1",
-              name: "Anti-Glare Standard 1.56",
-              price: 499,
-              index: "1.56",
-              coating: "Anti-Reflective & Scratch Resistant"
-            },
-            {
-              id: "lens-2",
-              name: "BlueCut Pro 1.60 High Index",
-              price: 1199,
-              index: "1.60",
-              coating: "Blue Shield & Oleophobic Anti-Smudge"
-            },
-            {
-              id: "lens-3",
-              name: "Crizal Easy Pro 1.67",
-              price: 2499,
-              index: "1.67",
-              coating: "Crizal Multi-Coating"
-            }
-          ],
+          lensTypes: [],
+          availableLenses: [],
           prescriptionConfig: {
-            allowManual: true,
-            allowUpload: true,
-            requireAddForProgressive: true
+            allowManual: false,
+            allowUpload: false,
+            requireAddForProgressive: false
           }
         }
       );
@@ -127,11 +98,7 @@ const ProductForm = ({
       return (
         initialData?.sunglassesConfig || {
           sunglassMode: "both",
-          lensTypes: [
-            { id: "sg-only", name: "Sunglass Only", price: 0, polarized: false },
-            { id: "sg-polarized", name: "HD Polarized Tint", price: 999, polarized: true },
-            { id: "sg-photochromic", name: "Photochromic Day-Night", price: 1699, polarized: false }
-          ]
+          lensTypes: []
         }
       );
     }
@@ -148,24 +115,18 @@ const ProductForm = ({
     defaultValues: {
       name: initialData?.name || "",
       sku: initialData?.sku || `LH-${Math.floor(1e3 + Math.random() * 9e3)}`,
-      brand: initialData?.brand || "The Lens Hut",
-      category:
-        initialData?.category ||
-        (productType === "contact-lens"
-          ? "Contact Lenses"
-          : productType === "sunglasses"
-          ? "Sunglasses"
-          : "Eyeglasses"),
-      gender: initialData?.gender || "Unisex",
+      brand: initialData?.brand || "",
+      category: initialData?.category || "",
+      gender: initialData?.gender || "",
       description: initialData?.description || "",
-      price: initialData?.price || 1999,
-      offerPrice: initialData?.offerPrice || void 0,
-      stock: initialData?.stock !== void 0 ? initialData.stock : 15,
+      price: initialData?.price !== void 0 ? initialData.price : "",
+      offerPrice: initialData?.offerPrice || "",
+      stock: initialData?.stock !== void 0 ? initialData.stock : "",
       status: initialData?.status || "active",
-      shape: initialData?.frameSpecifications?.shape || "Rectangle",
-      frameType: initialData?.frameSpecifications?.frameType || "Full Rim",
-      material: initialData?.frameSpecifications?.material || "Acetate",
-      size: initialData?.frameSpecifications?.size || "Medium"
+      shape: initialData?.frameSpecifications?.shape || "",
+      frameType: initialData?.frameSpecifications?.frameType || "",
+      material: initialData?.frameSpecifications?.material || "",
+      size: initialData?.frameSpecifications?.size || ""
     }
   });
 
@@ -173,38 +134,37 @@ const ProductForm = ({
 
   const handleProductTypeChange = (newType) => {
     setProductType(newType);
-    if (newType === "eyeglasses") {
-      setValue("category", "Eyeglasses");
-    } else if (newType === "contact-lens") {
-      setValue("category", "Contact Lenses");
-    } else if (newType === "sunglasses") {
-      setValue("category", "Sunglasses");
-    } else {
-      setValue("category", "Accessories");
-    }
   };
 
   const onFormSubmit = async (data) => {
+    if (dbCategories.length === 0) {
+      toast.error("Please create at least one category before adding products.");
+      return;
+    }
+    if (!data.category || !data.category.trim()) {
+      toast.error("Please select a store category.");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("name", data.name);
     if (data.sku) formData.append("sku", data.sku);
-    formData.append("brand", data.brand || "The Lens Hut Reserve");
+    formData.append("brand", data.brand || "");
     formData.append("productType", productType);
     formData.append("category", data.category);
-    formData.append("gender", data.gender || "Unisex");
+    formData.append("gender", data.gender || "");
     formData.append("description", data.description || "");
     formData.append("price", Number(data.price));
     if (data.offerPrice) formData.append("offerPrice", Number(data.offerPrice));
     formData.append("stock", Number(data.stock));
     formData.append("status", data.status || "active");
 
-    // Append image files
-    if (imageFiles.front) formData.append("front", imageFiles.front);
-    if (imageFiles.side) formData.append("side", imageFiles.side);
-    if (imageFiles.angle) formData.append("angle", imageFiles.angle);
-
-    // Append existing images JSON for retention
-    formData.append("images", JSON.stringify(images));
+    // Manage product images through the primary color variant
+    const primaryImages = colors[0]?.images || { front: "", side: "", angle: "" };
+    formData.append("images", JSON.stringify(primaryImages));
+    if (primaryImages.front) formData.append("front", primaryImages.front);
+    if (primaryImages.side) formData.append("side", primaryImages.side);
+    if (primaryImages.angle) formData.append("angle", primaryImages.angle);
 
     // Append complex configuration objects
     formData.append("colors", JSON.stringify(colors));
@@ -220,10 +180,10 @@ const ProductForm = ({
       formData.append(
         "frameSpecifications",
         JSON.stringify({
-          shape: data.shape,
-          frameType: data.frameType,
-          material: data.material,
-          size: data.size
+          shape: data.shape || "",
+          frameType: data.frameType || "",
+          material: data.material || "",
+          size: data.size || ""
         })
       );
     }
@@ -231,55 +191,88 @@ const ProductForm = ({
     await onSubmit(formData);
   };
 
-
   const watchedFormData = watch();
 
   return (
     <>
       <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-8">
-        {/* 1. Category / Product Type Switcher Card */}
+        {/* 1. Product Category Card with Category Validation */}
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-          <div>
-            <h2 className="text-base font-bold text-slate-900">
-              Product Category & Type
-            </h2>
-            <p className="text-xs text-slate-500">
-              Select product category to activate the specialized optical configuration engine
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-bold text-slate-900">
+                Product Category
+              </h2>
+              <p className="text-xs text-slate-500">
+                Assign product to a store category
+              </p>
+            </div>
+            {dbCategories.length > 0 && (
+              <span className="text-xs text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full font-medium">
+                {dbCategories.length} {dbCategories.length === 1 ? 'Category' : 'Categories'} Available
+              </span>
+            )}
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { id: "eyeglasses", label: "Eyeglasses", icon: Glasses, desc: "Spectacles & frames" },
-              { id: "contact-lens", label: "Contact Lens", icon: Package, desc: "Daily / Monthly packs" },
-              { id: "sunglasses", label: "Sunglasses", icon: Sun, desc: "Polarized & UV shades" },
-              { id: "accessories", label: "Accessories", icon: Sparkles, desc: "Cases & cleaning cloths" }
-            ].map((cat) => {
-              const isSelected = productType === cat.id;
-              const Icon = cat.icon;
-              return (
+          {!loadingCategories && dbCategories.length === 0 ? (
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3.5 text-amber-900">
+              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="space-y-1.5 flex-1">
+                <p className="text-sm font-bold">No Categories Found in Store</p>
+                <p className="text-xs text-amber-700">
+                  You cannot add products until at least one store category has been added. Please create a category first to proceed.
+                </p>
                 <button
-                  key={cat.id}
                   type="button"
-                  onClick={() => handleProductTypeChange(cat.id)}
-                  className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                    isSelected
-                      ? "border-[#E4232C] bg-rose-50/20 ring-1 ring-[#E4232C] shadow-xs"
-                      : "border-slate-200 bg-white hover:border-slate-300"
-                  }`}
+                  onClick={() => navigate("/categories")}
+                  className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <Icon size={18} className={isSelected ? "text-[#E4232C]" : "text-slate-500"} />
-                    {isSelected && <span className="w-2 h-2 rounded-full bg-[#E4232C]" />}
-                  </div>
-                  <div>
-                    <span className="text-xs font-bold text-slate-900 block">{cat.label}</span>
-                    <span className="text-[10px] text-slate-400 mt-0.5 block">{cat.desc}</span>
-                  </div>
+                  Create Category <ArrowRight size={13} />
                 </button>
-              );
-            })}
-          </div>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                Store Category <span className="text-rose-500">*</span>
+              </label>
+              <select
+                disabled={loadingCategories || dbCategories.length === 0}
+                className={`block w-full rounded-lg border bg-white text-slate-900 text-sm py-2 px-3 transition-colors focus:outline-none focus:ring-2 cursor-pointer ${
+                  errors.category
+                    ? "border-rose-300 focus:border-rose-500 focus:ring-rose-200"
+                    : "border-slate-300 focus:border-[#E4232C] focus:ring-[#E4232C]/20"
+                }`}
+                {...register("category", { required: "Please select a store category" })}
+                onChange={(e) => {
+                  const selectedCatName = e.target.value;
+                  setValue("category", selectedCatName, { shouldValidate: true });
+                  const lower = selectedCatName.toLowerCase();
+                  if (lower.includes("contact")) {
+                    handleProductTypeChange("contact-lens");
+                  } else if (lower.includes("sunglass")) {
+                    handleProductTypeChange("sunglasses");
+                  } else if (lower.includes("access") || lower.includes("cloth") || lower.includes("case")) {
+                    handleProductTypeChange("accessories");
+                  } else {
+                    handleProductTypeChange("eyeglasses");
+                  }
+                }}
+              >
+                <option value="">
+                  {loadingCategories ? "Loading categories..." : "Select Category *"}
+                </option>
+                {dbCategories.map((cat) => (
+                  <option key={cat.id || cat._id || cat.slug} value={cat.name}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+              {errors.category && (
+                <p className="mt-1 text-xs text-rose-600">{errors.category.message}</p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* 2. Basic Details Card */}
@@ -311,13 +304,17 @@ const ProductForm = ({
               placeholder="e.g. The Lens Hut Reserve, Ray-Ban"
               required
               error={errors.brand?.message}
-              {...register("brand", { required: "Brand is required" })}
+              {...register("brand", { required: "Brand name is required" })}
             />
 
             <Select
               label="Target Gender"
-              options={GENDERS.map((g) => ({ value: g, label: g }))}
+              options={[
+                { value: "", label: "Select Gender" },
+                ...GENDERS.map((g) => ({ value: g, label: g }))
+              ]}
               required
+              error={errors.gender?.message}
               {...register("gender", { required: "Gender is required" })}
             />
 
@@ -376,25 +373,37 @@ const ProductForm = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <Select
                 label="Shape"
-                options={FRAME_SHAPES.map((s) => ({ value: s, label: s }))}
+                options={[
+                  { value: "", label: "Select Shape" },
+                  ...FRAME_SHAPES.map((s) => ({ value: s, label: s }))
+                ]}
                 {...register("shape")}
               />
 
               <Select
                 label="Frame Type"
-                options={FRAME_TYPES.map((t) => ({ value: t, label: t }))}
+                options={[
+                  { value: "", label: "Select Frame Type" },
+                  ...FRAME_TYPES.map((t) => ({ value: t, label: t }))
+                ]}
                 {...register("frameType")}
               />
 
               <Select
                 label="Material"
-                options={FRAME_MATERIALS.map((m) => ({ value: m, label: m }))}
+                options={[
+                  { value: "", label: "Select Material" },
+                  ...FRAME_MATERIALS.map((m) => ({ value: m, label: m }))
+                ]}
                 {...register("material")}
               />
 
               <Select
                 label="Size"
-                options={FRAME_SIZES.map((s) => ({ value: s, label: s }))}
+                options={[
+                  { value: "", label: "Select Size" },
+                  ...FRAME_SIZES.map((s) => ({ value: s, label: s }))
+                ]}
                 {...register("size")}
               />
             </div>
@@ -412,7 +421,7 @@ const ProductForm = ({
             <Input
               type="number"
               label="Base Price (₹)"
-              placeholder="2499"
+              placeholder="e.g. 2499"
               required
               error={errors.price?.message}
               {...register("price", {
@@ -425,7 +434,7 @@ const ProductForm = ({
             <Input
               type="number"
               label="Offer / Sale Price (₹) (Optional)"
-              placeholder="1999"
+              placeholder="e.g. 1999"
               error={errors.offerPrice?.message}
               {...register("offerPrice", {
                 min: { value: 0, message: "Offer price cannot be negative" },
@@ -436,7 +445,7 @@ const ProductForm = ({
             <Input
               type="number"
               label="Stock Quantity"
-              placeholder="15"
+              placeholder="e.g. 15"
               required
               error={errors.stock?.message}
               {...register("stock", {
@@ -448,27 +457,13 @@ const ProductForm = ({
           </div>
         </div>
 
-        {/* 6. Color Variants */}
+        {/* 6. Color Variants - manages colors and their multi-perspective images */}
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
           <div>
             <h2 className="text-base font-bold text-slate-900">Product Colors / Variants</h2>
-            <p className="text-xs text-slate-500">Provide color options and corresponding hex tones</p>
+            <p className="text-xs text-slate-500">Provide color options and multi-angle imagery (Front, Side, Angle)</p>
           </div>
           <ProductColorVariant colors={colors} onChange={setColors} />
-        </div>
-
-        {/* 7. Product Images */}
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-          <div>
-            <h2 className="text-base font-bold text-slate-900">Product Images</h2>
-            <p className="text-xs text-slate-500">Multi-angle photography</p>
-          </div>
-          <ProductImageUpload
-            images={images}
-            imageFiles={imageFiles}
-            onFileChange={handleFileChange}
-            onUrlChange={handleUrlChange}
-          />
         </div>
 
         {/* Actions Bar with Live Preview */}
@@ -492,7 +487,12 @@ const ProductForm = ({
               Cancel
             </Button>
 
-            <Button type="submit" variant="primary" isLoading={isLoading}>
+            <Button
+              type="submit"
+              variant="primary"
+              isLoading={isLoading}
+              disabled={isLoading || (!loadingCategories && dbCategories.length === 0)}
+            >
               {mode === "add" ? "Create Product" : "Save Changes"}
             </Button>
           </div>
@@ -507,7 +507,7 @@ const ProductForm = ({
           ...watchedFormData,
           productType,
           colors,
-          images,
+          images: colors[0]?.images || { front: "", side: "", angle: "" },
           eyeglassesConfig: productType === "eyeglasses" ? categoryConfig : undefined,
           contactLensConfig: productType === "contact-lens" ? categoryConfig : undefined,
           sunglassesConfig: productType === "sunglasses" ? categoryConfig : undefined

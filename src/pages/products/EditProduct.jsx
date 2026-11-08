@@ -32,8 +32,8 @@ const EditProduct = () => {
       await updateProduct(productId, data);
       toast.success("Product updated successfully");
       navigate("/products");
-    } catch {
-      toast.error("Failed to update product");
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || "Failed to update product");
     } finally {
       setIsSubmitting(false);
     }

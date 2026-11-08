@@ -1,6 +1,7 @@
 import React from "react";
 import { formatCurrency } from "../../utils/formatCurrency";
-import { Glasses, Package, Sun, FileText } from "lucide-react";
+import { Glasses, Package, Sun, FileText, ExternalLink } from "lucide-react";
+import { resolveFileUrl } from "../../utils/fileUrl";
 
 const OrderItems = ({
   items = [],
@@ -30,12 +31,33 @@ const OrderItems = ({
               Lens: <strong>{lensName}</strong>
             </div>
           )}
-          {rx && rx.method === "upload" && (
-            <div className="text-emerald-700 font-semibold flex items-center gap-1">
-              <FileText size={11} />
-              <span>Doctor Prescription Uploaded</span>
-            </div>
-          )}
+          {rx && (rx.method === "upload" || rx.fileUrl || rx.fileName || rx.rxFile) && (() => {
+            const rxUrl = resolveFileUrl(rx.fileUrl || rx.url || (typeof rx.rxFile === "string" ? rx.rxFile : rx.rxFile?.fileUrl));
+            const rxName = rx.fileName || (typeof rx.rxFile === "object" ? rx.rxFile?.fileName : "") || "Doctor_Prescription.pdf";
+            return (
+              <div className="flex items-center justify-between p-2 bg-emerald-50/90 border border-emerald-200 rounded-md text-emerald-950 text-xs">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <FileText size={13} className="text-emerald-700 shrink-0" />
+                  <span className="font-semibold truncate max-w-[180px] sm:max-w-xs">
+                    Rx: {rxName}
+                  </span>
+                </div>
+                {rxUrl ? (
+                  <a
+                    href={rxUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-emerald-300 hover:bg-emerald-100 rounded text-[11px] font-bold text-emerald-800 transition-colors shrink-0 ml-2 shadow-2xs"
+                  >
+                    <span>View Rx</span>
+                    <ExternalLink size={11} />
+                  </a>
+                ) : (
+                  <span className="text-[10px] text-amber-700 font-medium">Uploaded</span>
+                )}
+              </div>
+            );
+          })()}
           {rx && rx.method === "manual" && (
             <div className="text-slate-600 font-mono text-[11px]">
               OD: {rx.od?.sph || "0.00"} {rx.od?.cyl && `CYL ${rx.od.cyl} ${rx.od.axis}`}
@@ -50,6 +72,10 @@ const OrderItems = ({
 
     if (pType === "contact-lens" || config.contactLens) {
       const cl = config.contactLens || {};
+      const clFile = cl.prescriptionFile || {};
+      const clUrl = resolveFileUrl(clFile.fileUrl || clFile.url || cl.fileUrl);
+      const clName = clFile.fileName || cl.fileName || "Contact_Lens_Rx.pdf";
+
       return (
         <div className="mt-1.5 p-2 bg-slate-50 border border-slate-100 rounded-lg text-xs space-y-1">
           <div className="flex items-center gap-1.5 font-bold text-[#14232E]">
@@ -61,8 +87,26 @@ const OrderItems = ({
           <div className="text-slate-600 font-mono text-[11px]">
             {cl.prescriptionMethod === "post-checkout" ? (
               <span className="text-amber-700 font-semibold">Powers to be taken post-checkout</span>
-            ) : cl.prescriptionMethod === "upload" ? (
-              <span className="text-emerald-700 font-semibold">Rx File Attached</span>
+            ) : cl.prescriptionMethod === "upload" || cl.prescriptionFile ? (
+              <div className="flex items-center justify-between p-1.5 bg-emerald-50/90 border border-emerald-200 rounded text-emerald-950 font-sans mt-1">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <FileText size={12} className="text-emerald-700 shrink-0" />
+                  <span className="font-semibold text-xs truncate max-w-[180px]">
+                    Rx: {clName}
+                  </span>
+                </div>
+                {clUrl && (
+                  <a
+                    href={clUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-white border border-emerald-300 hover:bg-emerald-100 rounded text-[10px] font-bold text-emerald-800 transition-colors shrink-0 ml-2"
+                  >
+                    <span>View Rx</span>
+                    <ExternalLink size={10} />
+                  </a>
+                )}
+              </div>
             ) : (
               <span>
                 OD: {cl.od?.sph || "Plano"} {cl.od?.cyl && `CYL ${cl.od.cyl} ${cl.od.axis}`}

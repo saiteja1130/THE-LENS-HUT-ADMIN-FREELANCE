@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import { Plus, Layers, Edit2, Trash2, Eye, EyeOff, Check, ArrowRight } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Plus, Layers, Edit2, Trash2, Eye, EyeOff, Check, ArrowRight, UploadCloud, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { categoryService } from "../../services/categoryService";
+import { uploadService, MAX_IMAGE_SIZE_BYTES } from "../../services/uploadService";
 import { PageContainer } from "../../components/layout/PageContainer";
 import { PageHeader } from "../../components/common/PageHeader";
 import { Modal } from "../../components/common/Modal";
@@ -17,6 +18,8 @@ export const CategoryList = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const catFileInputRef = useRef(null);
 
   // Form State
   const [name, setName] = useState("");
@@ -28,6 +31,27 @@ export const CategoryList = () => {
   const [order, setOrder] = useState(1);
   const [isActive, setIsActive] = useState(true);
   const [isFeatured, setIsFeatured] = useState(true);
+
+  const handleCategoryFileUpload = async (file) => {
+    if (!file) return;
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      toast.error(`File "${file.name}" exceeds 2MB limit. Please choose an image under 2MB.`);
+      return;
+    }
+    setIsUploadingImage(true);
+    try {
+      const data = await uploadService.uploadImage(file, "categories");
+      setImageUrl(data.url);
+      toast.success("Category image uploaded successfully to server");
+    } catch (err) {
+      toast.error(err.message || "Failed to upload category image");
+    } finally {
+      setIsUploadingImage(false);
+      if (catFileInputRef.current) {
+        catFileInputRef.current.value = "";
+      }
+    }
+  };
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -349,33 +373,80 @@ export const CategoryList = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Image URL *
+          {/* Category Image Upload (Multer, Max 2MB) */}
+          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-slate-800">
+                Category Image *
               </label>
-              <input
-                type="text"
-                required
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="/images/home/cat-eyeglasses.png or HTTPS URL"
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#14232E]"
-              />
+              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                Multer Server Storage • Max 2MB
+              </span>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Target Route Link
-              </label>
-              <input
-                type="text"
-                value={link}
-                onChange={(e) => setLink(e.target.value)}
-                placeholder="e.g. /eyeglasses or /shop"
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#14232E]"
-              />
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 rounded-lg border border-slate-200 bg-white p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt="Category Preview"
+                    className="w-full h-full object-cover rounded"
+                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                  />
+                ) : (
+                  <Layers className="w-5 h-5 text-slate-300" />
+                )}
+              </div>
+
+              <div className="flex-1 space-y-1.5">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  ref={catFileInputRef}
+                  className="hidden"
+                  onChange={(e) => handleCategoryFileUpload(e.target.files?.[0])}
+                />
+                <button
+                  type="button"
+                  disabled={isUploadingImage}
+                  onClick={() => catFileInputRef.current?.click()}
+                  className="w-full py-1.5 px-3 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-xs font-bold text-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  {isUploadingImage ? (
+                    <>
+                      <Loader2 size={13} className="animate-spin text-[#E4232C]" />
+                      <span>Uploading to Server (Max 2MB)...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UploadCloud size={13} className="text-slate-500" />
+                      <span>Upload Category Image File (Max 2MB)</span>
+                    </>
+                  )}
+                </button>
+                <input
+                  type="text"
+                  required
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="Or paste server image URL"
+                  className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-600 focus:outline-none focus:border-[#14232E]"
+                />
+              </div>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Target Route Link
+            </label>
+            <input
+              type="text"
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              placeholder="e.g. /eyeglasses or /shop"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#14232E]"
+            />
           </div>
 
           <div>

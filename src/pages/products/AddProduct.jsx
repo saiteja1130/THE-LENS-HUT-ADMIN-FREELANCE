@@ -15,8 +15,8 @@ const AddProduct = () => {
       await addProduct(data);
       toast.success("Product added successfully");
       navigate("/products");
-    } catch {
-      toast.error("Failed to create product");
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || "Failed to create product");
     } finally {
       setIsSubmitting(false);
     }

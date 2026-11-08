@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { Plus, Trash2, Image as ImageIcon } from "lucide-react";
+import { useState, useRef } from "react";
+import { Plus, Trash2, Image as ImageIcon, UploadCloud, Loader2 } from "lucide-react";
+import { toast } from "react-toastify";
 import { Button } from "../common/Button";
 import { Input } from "../common/Input";
+import { uploadService, MAX_IMAGE_SIZE_BYTES } from "../../services/uploadService";
 
 const ProductColorVariant = ({ colors = [], onChange }) => {
   const [newColorName, setNewColorName] = useState("");
@@ -12,11 +14,46 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
     angle: "",
   });
 
+  const [uploadingState, setUploadingState] = useState({
+    front: false,
+    side: false,
+    angle: false,
+  });
+
+  const fileInputRefs = {
+    front: useRef(null),
+    side: useRef(null),
+    angle: useRef(null),
+  };
+
   const handleImageChange = (key, val) => {
     setNewImages((prev) => ({
       ...prev,
       [key]: val,
     }));
+  };
+
+  const handleFileUpload = async (key, file) => {
+    if (!file) return;
+
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      toast.error(`File "${file.name}" exceeds the 2MB size limit. Please upload an image under 2MB.`);
+      return;
+    }
+
+    setUploadingState((prev) => ({ ...prev, [key]: true }));
+    try {
+      const data = await uploadService.uploadImage(file, "products");
+      handleImageChange(key, data.url);
+      toast.success(`${key.charAt(0).toUpperCase() + key.slice(1)} image uploaded successfully`);
+    } catch (err) {
+      toast.error(err.message || "Failed to upload image to server.");
+    } finally {
+      setUploadingState((prev) => ({ ...prev, [key]: false }));
+      if (fileInputRefs[key]?.current) {
+        fileInputRefs[key].current.value = "";
+      }
+    }
   };
 
   const handleAddColor = () => {
@@ -49,7 +86,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
       <div className="space-y-3">
         {colors.length === 0 ? (
           <p className="text-xs text-slate-400 italic">
-            No color variants added yet.
+            No color variants added yet. Add a variant below with its color tone and perspective photos.
           </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
@@ -92,7 +129,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
                   {/* Multi-Angle Images Box */}
                   <div className="bg-slate-50/70 p-2.5 rounded-lg border border-slate-100">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-                      Variant Angles (Front / Side / Angle)
+                      Variant Perspectives
                     </span>
                     <div className="grid grid-cols-3 gap-2">
                       {/* Front */}
@@ -113,7 +150,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] text-slate-500 mt-1 font-medium">
+                        <span className="text-[10px] text-slate-500 mt-1 font-medium truncate max-w-full">
                           Front
                         </span>
                       </div>
@@ -136,7 +173,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] text-slate-500 mt-1 font-medium">
+                        <span className="text-[10px] text-slate-500 mt-1 font-medium truncate max-w-full">
                           Side
                         </span>
                       </div>
@@ -159,7 +196,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] text-slate-500 mt-1 font-medium">
+                        <span className="text-[10px] text-slate-500 mt-1 font-medium truncate max-w-full">
                           Angle
                         </span>
                       </div>
@@ -174,12 +211,12 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
 
       {/* Add Color Variant form */}
       <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <span className="font-bold text-xs text-slate-800 uppercase tracking-wider">
             Add Color Variant & Angles
           </span>
-          <span className="text-[11px] text-slate-400">
-            Front, Side & Angle matching product perspectives
+          <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+            Stored via Multer on server • Max 2MB per image
           </span>
         </div>
 
@@ -214,34 +251,68 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
 
         {/* 3 Perspectives: Front, Side, Angle */}
         <div className="space-y-2 pt-1 border-t border-slate-200/60">
-          <span className="text-[11px] font-bold text-slate-700 block">
-            Perspective Image URLs:
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-slate-700 block">
+              Perspective Images:
+            </span>
+            <span className="text-[10px] text-slate-400">
+              Upload local file (max 2MB) or paste server URL
+            </span>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* Front View */}
-            <div className="space-y-1.5 bg-white p-2.5 rounded-lg border border-slate-200">
+            <div className="space-y-2 bg-white p-3 rounded-lg border border-slate-200 flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-slate-800">
-                  Front View (Primary)
+                  Front View (Primary) *
                 </span>
                 {newImages.front && (
                   <img
                     src={newImages.front}
                     alt="Front Preview"
-                    className="w-6 h-5 object-contain rounded border"
+                    className="w-7 h-6 object-contain rounded border border-slate-200"
                   />
                 )}
               </div>
+
+              <div>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  ref={fileInputRefs.front}
+                  className="hidden"
+                  onChange={(e) => handleFileUpload("front", e.target.files?.[0])}
+                />
+                <button
+                  type="button"
+                  disabled={uploadingState.front}
+                  onClick={() => fileInputRefs.front.current?.click()}
+                  className="w-full py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-dashed border-slate-300 rounded text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  {uploadingState.front ? (
+                    <>
+                      <Loader2 size={13} className="animate-spin text-[#E4232C]" />
+                      <span>Uploading (Max 2MB)...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UploadCloud size={13} className="text-slate-500" />
+                      <span>Upload File (Max 2MB)</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
               <Input
-                placeholder="https://... Front URL"
+                placeholder="Or paste server image URL"
                 value={newImages.front}
                 onChange={(e) => handleImageChange("front", e.target.value)}
               />
             </div>
 
             {/* Side View */}
-            <div className="space-y-1.5 bg-white p-2.5 rounded-lg border border-slate-200">
+            <div className="space-y-2 bg-white p-3 rounded-lg border border-slate-200 flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-slate-800">
                   Side View (Temples)
@@ -250,19 +321,48 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
                   <img
                     src={newImages.side}
                     alt="Side Preview"
-                    className="w-6 h-5 object-contain rounded border"
+                    className="w-7 h-6 object-contain rounded border border-slate-200"
                   />
                 )}
               </div>
+
+              <div>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  ref={fileInputRefs.side}
+                  className="hidden"
+                  onChange={(e) => handleFileUpload("side", e.target.files?.[0])}
+                />
+                <button
+                  type="button"
+                  disabled={uploadingState.side}
+                  onClick={() => fileInputRefs.side.current?.click()}
+                  className="w-full py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-dashed border-slate-300 rounded text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  {uploadingState.side ? (
+                    <>
+                      <Loader2 size={13} className="animate-spin text-[#E4232C]" />
+                      <span>Uploading (Max 2MB)...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UploadCloud size={13} className="text-slate-500" />
+                      <span>Upload File (Max 2MB)</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
               <Input
-                placeholder="https://... Side URL"
+                placeholder="Or paste server image URL"
                 value={newImages.side}
                 onChange={(e) => handleImageChange("side", e.target.value)}
               />
             </div>
 
             {/* Angle View */}
-            <div className="space-y-1.5 bg-white p-2.5 rounded-lg border border-slate-200">
+            <div className="space-y-2 bg-white p-3 rounded-lg border border-slate-200 flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-slate-800">
                   Angle View (Perspective)
@@ -271,12 +371,41 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
                   <img
                     src={newImages.angle}
                     alt="Angle Preview"
-                    className="w-6 h-5 object-contain rounded border"
+                    className="w-7 h-6 object-contain rounded border border-slate-200"
                   />
                 )}
               </div>
+
+              <div>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  ref={fileInputRefs.angle}
+                  className="hidden"
+                  onChange={(e) => handleFileUpload("angle", e.target.files?.[0])}
+                />
+                <button
+                  type="button"
+                  disabled={uploadingState.angle}
+                  onClick={() => fileInputRefs.angle.current?.click()}
+                  className="w-full py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-dashed border-slate-300 rounded text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  {uploadingState.angle ? (
+                    <>
+                      <Loader2 size={13} className="animate-spin text-[#E4232C]" />
+                      <span>Uploading (Max 2MB)...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UploadCloud size={13} className="text-slate-500" />
+                      <span>Upload File (Max 2MB)</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
               <Input
-                placeholder="https://... Angle URL"
+                placeholder="Or paste server image URL"
                 value={newImages.angle}
                 onChange={(e) => handleImageChange("angle", e.target.value)}
               />
@@ -289,8 +418,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
           <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
             <ImageIcon size={13} />
             <span>
-              Clicking this color will display its matching Front, Side & Angle
-              photos
+              Perspective photos will be saved to the server and linked to this color variant
             </span>
           </div>
 

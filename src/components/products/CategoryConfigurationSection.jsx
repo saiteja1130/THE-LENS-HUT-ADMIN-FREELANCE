@@ -10,12 +10,12 @@ export const CategoryConfigurationSection = ({
 }) => {
   // ================= 1. EYEGLASSES CONFIGURATION =================
   if (productType === 'eyeglasses') {
-    const lensTypes = configData.lensTypes || ['frame-only', 'single-vision', 'progressive'];
+    const lensTypes = configData.lensTypes || [];
     const availableLenses = configData.availableLenses || [];
     const prescriptionConfig = configData.prescriptionConfig || {
-      allowManual: true,
-      allowUpload: true,
-      requireAddForProgressive: true
+      allowManual: false,
+      allowUpload: false,
+      requireAddForProgressive: false
     };
 
     const toggleLensType = (type) => {
@@ -26,7 +26,7 @@ export const CategoryConfigurationSection = ({
     };
 
     const [newLensName, setNewLensName] = useState('');
-    const [newLensPrice, setNewLensPrice] = useState('499');
+    const [newLensPrice, setNewLensPrice] = useState('');
     const [newLensIndex, setNewLensIndex] = useState('1.56');
     const [newLensCoating, setNewLensCoating] = useState('Anti-Glare & Scratch Resistant');
 
@@ -35,7 +35,7 @@ export const CategoryConfigurationSection = ({
       const newLens = {
         id: `lens-${Date.now().toString(36)}`,
         name: newLensName.trim(),
-        price: Number(newLensPrice) || 0,
+        price: newLensPrice !== '' ? Number(newLensPrice) : 0,
         index: newLensIndex,
         coating: newLensCoating,
         description: `${newLensIndex} Index with ${newLensCoating}`,
@@ -46,7 +46,7 @@ export const CategoryConfigurationSection = ({
         availableLenses: [...availableLenses, newLens]
       });
       setNewLensName('');
-      setNewLensPrice('499');
+      setNewLensPrice('');
     };
 
     const handleRemoveLens = (id) => {
@@ -152,6 +152,7 @@ export const CategoryConfigurationSection = ({
               </label>
               <input
                 type="number"
+                placeholder="0"
                 value={newLensPrice}
                 onChange={(e) => setNewLensPrice(e.target.value)}
                 className="w-full text-xs p-1.5 bg-white border border-slate-300 rounded-lg"
@@ -176,7 +177,7 @@ export const CategoryConfigurationSection = ({
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
-                checked={prescriptionConfig.allowManual !== false}
+                checked={Boolean(prescriptionConfig.allowManual)}
                 onChange={(e) => onChange({
                   ...configData,
                   prescriptionConfig: { ...prescriptionConfig, allowManual: e.target.checked }
@@ -188,7 +189,7 @@ export const CategoryConfigurationSection = ({
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
-                checked={prescriptionConfig.allowUpload !== false}
+                checked={Boolean(prescriptionConfig.allowUpload)}
                 onChange={(e) => onChange({
                   ...configData,
                   prescriptionConfig: { ...prescriptionConfig, allowUpload: e.target.checked }
@@ -200,7 +201,7 @@ export const CategoryConfigurationSection = ({
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
-                checked={prescriptionConfig.requireAddForProgressive !== false}
+                checked={Boolean(prescriptionConfig.requireAddForProgressive)}
                 onChange={(e) => onChange({
                   ...configData,
                   prescriptionConfig: { ...prescriptionConfig, requireAddForProgressive: e.target.checked }

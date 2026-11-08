@@ -93,7 +93,7 @@ const OrderDetails = () => {
           {
     /* Optical Prescription Parameters */
   }
-          <PrescriptionDetails prescription={order.prescription} />
+          <PrescriptionDetails prescription={order.prescription} items={order.items} />
 
           {
     /* Courier Tracking Details */
