@@ -1,10 +1,10 @@
 import { createContext, useState, useEffect, useCallback } from "react";
 import { settingsService } from "../services/settingsService";
-import { initialMockAdminProfile, initialMockStoreSettings } from "../data/mockStores";
+import { defaultAdminProfile, defaultStoreSettings } from "../data/defaultSettings";
 const SettingsContext = createContext(void 0);
 const SettingsProvider = ({ children }) => {
-  const [adminProfile, setAdminProfile] = useState(initialMockAdminProfile);
-  const [storeSettings, setStoreSettings] = useState(initialMockStoreSettings);
+  const [adminProfile, setAdminProfile] = useState(defaultAdminProfile);
+  const [storeSettings, setStoreSettings] = useState(defaultStoreSettings);
   const [loading, setLoading] = useState(true);
   const fetchSettings = useCallback(async () => {
     setLoading(true);

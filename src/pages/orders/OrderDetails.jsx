@@ -118,28 +118,30 @@ const OrderDetails = () => {
             </h2>
 
             <div className="space-y-2 text-xs">
-              <p className="text-sm font-bold text-slate-900">{order.customer.name}</p>
+              <p className="text-sm font-bold text-slate-900">{order.customer?.name || order.shippingAddress?.fullName || 'Customer'}</p>
 
               <div className="flex items-center gap-2 text-slate-600">
                 <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span className="truncate">{order.customer.email}</span>
+                <span className="truncate">{order.customer?.email || order.shippingAddress?.email || 'N/A'}</span>
               </div>
 
               <div className="flex items-center gap-2 text-slate-600">
                 <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span>{order.customer.phone}</span>
+                <span>{order.customer?.phone || order.shippingAddress?.phone || 'N/A'}</span>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-slate-100">
-              <button
-    type="button"
-    onClick={() => navigate(`/customers/${order.customer.id}`)}
-    className="text-xs font-semibold text-[#b58d24] hover:text-[#967417] transition-colors cursor-pointer"
-  >
-                View Customer History &rarr;
-              </button>
-            </div>
+            {order.customer?.id && (
+              <div className="pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/customers/${order.customer.id}`)}
+                  className="text-xs font-semibold text-[#b58d24] hover:text-[#967417] transition-colors cursor-pointer"
+                >
+                  View Customer History &rarr;
+                </button>
+              </div>
+            )}
           </div>
 
           {
@@ -152,14 +154,16 @@ const OrderDetails = () => {
             </h2>
 
             <div className="text-xs text-slate-600 space-y-1">
-              <p className="font-semibold text-slate-900">{order.shippingAddress.fullName}</p>
-              <p>{order.shippingAddress.addressLine1}</p>
-              {order.shippingAddress.addressLine2 && <p>{order.shippingAddress.addressLine2}</p>}
+              <p className="font-semibold text-slate-900">{order.shippingAddress?.fullName || order.customer?.name || 'Recipient'}</p>
+              <p>{order.shippingAddress?.addressLine1 || order.shippingAddress?.street || 'Address Line'}</p>
+              {(order.shippingAddress?.addressLine2 || order.shippingAddress?.locality) && (
+                <p>{order.shippingAddress?.addressLine2 || order.shippingAddress?.locality}</p>
+              )}
               <p>
-                {order.shippingAddress.city}, {order.shippingAddress.state} -{" "}
-                {order.shippingAddress.postalCode}
+                {order.shippingAddress?.city}, {order.shippingAddress?.state} -{" "}
+                {order.shippingAddress?.postalCode || order.shippingAddress?.pincode}
               </p>
-              <p className="text-slate-400">{order.shippingAddress.country}</p>
+              {order.shippingAddress?.country && <p className="text-slate-400">{order.shippingAddress.country}</p>}
             </div>
           </div>
 

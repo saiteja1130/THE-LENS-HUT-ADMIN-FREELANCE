@@ -1,5 +1,0 @@
-const initialMockOrders = [];
-
-export {
-  initialMockOrders
-};

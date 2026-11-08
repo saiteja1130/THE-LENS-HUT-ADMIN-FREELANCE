@@ -1,5 +1,0 @@
-const initialMockBanners = [];
-
-export {
-  initialMockBanners
-};

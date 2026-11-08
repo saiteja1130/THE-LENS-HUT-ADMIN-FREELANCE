@@ -1,4 +1,3 @@
-import { initialMockCoupons } from "../data/mockCoupons";
 const STORAGE_KEY = "thelenshut_coupons";
 const loadCoupons = () => {
   const data = localStorage.getItem(STORAGE_KEY);

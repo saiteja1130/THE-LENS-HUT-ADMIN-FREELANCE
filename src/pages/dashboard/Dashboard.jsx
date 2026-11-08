@@ -19,7 +19,6 @@ import { RecentOrders } from "../../components/dashboard/RecentOrders";
 import { Button } from "../../components/common/Button";
 import { Loader } from "../../components/common/Loader";
 import { formatCurrency } from "../../utils/formatCurrency";
-import { mockSalesChartWeekly, mockSalesChartMonthly } from "../../data/mockDashboard";
 const Dashboard = () => {
   const navigate = useNavigate();
   const { orders, loading: ordersLoading } = useOrders();
@@ -38,38 +37,40 @@ const Dashboard = () => {
   const totalCustomersCount = customers.length;
 
   const weeklyData = useMemo(() => {
-    if (!orders || orders.length === 0) return mockSalesChartWeekly;
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const map = {};
     days.forEach((d) => { map[d] = { date: d, sales: 0, orders: 0 }; });
-    orders.forEach((o) => {
-      if (o.orderStatus !== "Cancelled" && o.orderDate) {
-        const d = new Date(o.orderDate);
-        const dayName = days[d.getDay()];
-        if (map[dayName]) {
-          map[dayName].sales += (o.totalAmount || 0);
-          map[dayName].orders += 1;
+    if (orders && orders.length > 0) {
+      orders.forEach((o) => {
+        if (o.orderStatus !== "Cancelled" && o.orderDate) {
+          const d = new Date(o.orderDate);
+          const dayName = days[d.getDay()];
+          if (map[dayName]) {
+            map[dayName].sales += (o.totalAmount || 0);
+            map[dayName].orders += 1;
+          }
         }
-      }
-    });
+      });
+    }
     return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => map[d]);
   }, [orders]);
 
   const monthlyData = useMemo(() => {
-    if (!orders || orders.length === 0) return mockSalesChartMonthly;
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const map = {};
     months.forEach((m) => { map[m] = { date: m, sales: 0, orders: 0 }; });
-    orders.forEach((o) => {
-      if (o.orderStatus !== "Cancelled" && o.orderDate) {
-        const d = new Date(o.orderDate);
-        const monthName = months[d.getMonth()];
-        if (map[monthName]) {
-          map[monthName].sales += (o.totalAmount || 0);
-          map[monthName].orders += 1;
+    if (orders && orders.length > 0) {
+      orders.forEach((o) => {
+        if (o.orderStatus !== "Cancelled" && o.orderDate) {
+          const d = new Date(o.orderDate);
+          const monthName = months[d.getMonth()];
+          if (map[monthName]) {
+            map[monthName].sales += (o.totalAmount || 0);
+            map[monthName].orders += 1;
+          }
         }
-      }
-    });
+      });
+    }
     return months.map((m) => map[m]);
   }, [orders]);
   return <PageContainer>

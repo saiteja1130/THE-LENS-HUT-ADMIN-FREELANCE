@@ -1,15 +1,29 @@
-import { initialMockAdminProfile, initialMockStoreSettings } from "../data/mockStores";
+import { defaultAdminProfile, defaultStoreSettings } from "../data/defaultSettings";
+import { authService } from "./authService";
+
 const STORAGE_KEY_PROFILE = "thelenshut_admin_profile";
 const STORAGE_KEY_STORE = "thelenshut_store_settings";
+
+const getFallbackProfile = () => {
+  const current = authService.getCurrentAdmin()?.admin;
+  if (current) {
+    return {
+      name: current.name || "",
+      email: current.email || "",
+    };
+  }
+  return defaultAdminProfile;
+};
+
 const settingsService = {
   getAdminProfile: async () => {
     await new Promise((resolve) => setTimeout(resolve, 150));
     const data = localStorage.getItem(STORAGE_KEY_PROFILE);
-    if (!data) return initialMockAdminProfile;
+    if (!data) return getFallbackProfile();
     try {
       return JSON.parse(data);
     } catch {
-      return initialMockAdminProfile;
+      return getFallbackProfile();
     }
   },
   updateAdminProfile: async (profile) => {
@@ -20,11 +34,11 @@ const settingsService = {
   getStoreSettings: async () => {
     await new Promise((resolve) => setTimeout(resolve, 150));
     const data = localStorage.getItem(STORAGE_KEY_STORE);
-    if (!data) return initialMockStoreSettings;
+    if (!data) return defaultStoreSettings;
     try {
       return JSON.parse(data);
     } catch {
-      return initialMockStoreSettings;
+      return defaultStoreSettings;
     }
   },
   updateStoreSettings: async (settings) => {

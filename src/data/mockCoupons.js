@@ -1,5 +1,0 @@
-const initialMockCoupons = [];
-
-export {
-  initialMockCoupons
-};

@@ -32,20 +32,20 @@ const OrderTable = ({
     {
       header: "Customer",
       render: (order) => <div>
-          <div className="font-medium text-slate-900">{order.customer.name}</div>
-          <div className="text-xs text-slate-400">{order.customer.email}</div>
+          <div className="font-medium text-slate-900">{order.customer?.name || order.shippingAddress?.fullName || 'Customer'}</div>
+          <div className="text-xs text-slate-400">{order.customer?.email || order.shippingAddress?.email || ''}</div>
         </div>
     },
     {
       header: "Phone",
       render: (order) => <span className="text-xs text-slate-600 whitespace-nowrap">
-          {order.customer.phone}
+          {order.customer?.phone || order.shippingAddress?.phone || 'N/A'}
         </span>
     },
     {
       header: "Items",
       render: (order) => <span className="text-xs font-medium text-slate-700">
-          {order.items.reduce((acc, item) => acc + item.quantity, 0)} items
+          {(order.items || []).reduce((acc, item) => acc + (item.quantity || 1), 0)} items
         </span>
     },
     {

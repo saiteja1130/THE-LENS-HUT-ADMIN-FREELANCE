@@ -59,7 +59,7 @@ const StoreSettingsForm = ({
 
           <Input
     label="Support Phone Number"
-    placeholder="+91 98765 43210"
+    placeholder="+91 XXXXX XXXXX"
     required
     error={errors.storePhone?.message}
     {...register("storePhone", { required: "Phone is required" })}

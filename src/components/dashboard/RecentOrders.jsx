@@ -45,8 +45,8 @@ const RecentOrders = ({ orders }) => {
                     {order.orderNumber}
                   </td>
                   <td className="py-3.5 px-4">
-                    <div className="font-medium text-slate-900">{order.customer.name}</div>
-                    <div className="text-xs text-slate-400">{order.customer.phone}</div>
+                    <div className="font-medium text-slate-900">{order.customer?.name || order.shippingAddress?.fullName || 'Customer'}</div>
+                    <div className="text-xs text-slate-400">{order.customer?.phone || order.shippingAddress?.phone || ''}</div>
                   </td>
                   <td className="py-3.5 px-4 text-xs text-slate-500 whitespace-nowrap">
                     {formatDate(order.orderDate)}
