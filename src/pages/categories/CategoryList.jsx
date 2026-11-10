@@ -1,14 +1,26 @@
 import { useState, useEffect, useRef } from "react";
-import { Plus, Layers, Edit2, Trash2, Eye, EyeOff, Check, ArrowRight, UploadCloud, Loader2 } from "lucide-react";
+import {
+  Plus,
+  Layers,
+  Edit2,
+  Trash2,
+  Eye,
+  EyeOff,
+  UploadCloud,
+  Loader2,
+} from "lucide-react";
 import { toast } from "react-toastify";
 import { categoryService } from "../../services/categoryService";
-import { uploadService, MAX_IMAGE_SIZE_BYTES } from "../../services/uploadService";
+import {
+  uploadService,
+  MAX_IMAGE_SIZE_BYTES,
+} from "../../services/uploadService";
 import { PageContainer } from "../../components/layout/PageContainer";
-import { PageHeader } from "../../components/common/PageHeader";
 import { Modal } from "../../components/common/Modal";
 import { ConfirmDialog } from "../../components/common/ConfirmDialog";
 import { EmptyState } from "../../components/common/EmptyState";
 import { Button } from "../../components/common/Button";
+import { Loader } from "../../components/common/Loader";
 
 export const CategoryList = () => {
   const [categories, setCategories] = useState([]);
@@ -35,14 +47,16 @@ export const CategoryList = () => {
   const handleCategoryFileUpload = async (file) => {
     if (!file) return;
     if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      toast.error(`File "${file.name}" exceeds 2MB limit. Please choose an image under 2MB.`);
+      toast.error(
+        `File "${file.name}" exceeds 2MB limit. Please choose an image under 2MB.`
+      );
       return;
     }
     setIsUploadingImage(true);
     try {
       const data = await uploadService.uploadImage(file, "categories");
       setImageUrl(data.url);
-      toast.success("Category image uploaded successfully to server");
+      toast.success("Category image uploaded successfully");
     } catch (err) {
       toast.error(err.message || "Failed to upload category image");
     } finally {
@@ -106,7 +120,9 @@ export const CategoryList = () => {
     try {
       const updated = await categoryService.toggleCategory(id);
       setCategories((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, isActive: updated.isActive } : c))
+        prev.map((c) =>
+          c.id === id ? { ...c, isActive: updated.isActive } : c
+        )
       );
       toast.success("Category status updated");
     } catch {
@@ -168,128 +184,178 @@ export const CategoryList = () => {
 
   return (
     <PageContainer>
-      <PageHeader
-        title="Categories"
-        description="Manage product categories (Eyeglasses, Sunglasses, Contact Lenses, Accessories) displayed on Web and Mobile."
-        actions={
+      {/* Page Header */}
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+              Categories
+            </h1>
+            {!loading && (
+              <span className="inline-flex items-center rounded-full border border-slate-200/80 bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
+                {categories.length}{" "}
+                {categories.length === 1 ? "Category" : "Categories"}
+              </span>
+            )}
+          </div>
+          <p className="mt-1 text-xs text-slate-500 sm:text-sm">
+            Manage product categories (Eyeglasses, Sunglasses, Contact Lenses,
+            Accessories) displayed on Web and Mobile
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2.5">
           <Button
             variant="secondary"
+            size="md"
             onClick={handleOpenAdd}
-            icon={<Plus className="w-4 h-4" />}
+            icon={<Plus className="h-4 w-4" />}
+            className="shadow-xs"
           >
             Add Category
           </Button>
-        }
-      />
+        </div>
+      </div>
 
-      {!loading && categories.length === 0 ? (
+      {/* Main Content: Loading, Empty State, or Categories Table */}
+      {loading ? (
+        <div className="flex min-h-[360px] items-center justify-center rounded-xl border border-slate-200/80 bg-white p-12 shadow-xs">
+          <Loader message="Loading categories..." />
+        </div>
+      ) : categories.length === 0 ? (
         <EmptyState
           title="No categories found"
           description="There are currently no categories configured for the catalog."
-          icon={<Layers className="w-8 h-8 text-slate-400" />}
+          icon={<Layers className="h-8 w-8 text-slate-400" />}
           actionLabel="Add Category"
           onAction={handleOpenAdd}
         />
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full min-w-[760px] border-collapse text-left">
               <thead>
-                <tr className="border-b border-slate-200/80 bg-slate-50/70 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="py-3 px-4">Image</th>
-                  <th className="py-3 px-4">Category Details</th>
-                  <th className="py-3 px-4">Slug & Route</th>
-                  <th className="py-3 px-4 text-center">Order</th>
-                  <th className="py-3 px-4 text-center">Home Featured</th>
-                  <th className="py-3 px-4 text-center">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                <tr className="border-b border-slate-200/80 bg-slate-50/75 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="py-3.5 px-4 sm:px-5">Image</th>
+                  <th className="py-3.5 px-4">Category Details</th>
+                  <th className="py-3.5 px-4">Slug & Route</th>
+                  <th className="py-3.5 px-4 text-center">Order</th>
+                  <th className="py-3.5 px-4 text-center">Home Featured</th>
+                  <th className="py-3.5 px-4 text-center">Status</th>
+                  <th className="py-3.5 px-4 sm:px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-sm">
+              <tbody className="divide-y divide-slate-100 text-sm text-slate-600">
                 {categories.map((cat) => (
-                  <tr key={cat.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr
+                    key={cat.id}
+                    className="transition-colors hover:bg-slate-50/60"
+                  >
                     {/* Visual Preview */}
-                    <td className="py-3 px-4">
-                      <div className="w-14 h-12 rounded-xl bg-slate-100 border border-slate-200/60 p-1 flex items-center justify-center overflow-hidden">
+                    <td className="py-3.5 px-4 sm:px-5">
+                      <div className="flex h-12 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200/80 bg-slate-50 p-1 shadow-2xs">
                         <img
                           src={cat.imageUrl}
                           alt={cat.name}
                           className="max-h-full max-w-full object-contain"
                           onError={(e) => {
-                            e.currentTarget.src = "/images/home/cat-eyeglasses.png";
+                            e.currentTarget.src =
+                              "/images/home/cat-eyeglasses.png";
                           }}
                         />
                       </div>
                     </td>
 
                     {/* Name & Subtitle */}
-                    <td className="py-3 px-4">
-                      <div className="font-bold text-[#14232E]">{cat.name}</div>
-                      <div className="text-xs text-slate-500 truncate max-w-xs">
+                    <td className="py-3.5 px-4">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEdit(cat)}
+                        className="block text-left text-sm font-bold text-slate-900 transition-colors hover:text-[#E4232C] cursor-pointer"
+                      >
+                        {cat.name}
+                      </button>
+                      <div className="mt-0.5 max-w-xs truncate text-xs text-slate-500">
                         {cat.subtitle || cat.description || "—"}
                       </div>
                     </td>
 
                     {/* Slug & Target Route */}
-                    <td className="py-3 px-4">
-                      <span className="font-mono text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md">
+                    <td className="py-3.5 px-4">
+                      <span className="inline-block rounded-md border border-slate-200/80 bg-slate-100/80 px-2 py-0.5 font-mono text-xs font-semibold text-slate-700">
                         {cat.slug}
                       </span>
-                      <div className="text-xs text-slate-400 mt-0.5">{cat.link || `/${cat.slug}`}</div>
+                      <div className="mt-1 max-w-[160px] truncate font-mono text-xs text-slate-400">
+                        {cat.link || `/${cat.slug}`}
+                      </div>
                     </td>
 
                     {/* Display Order */}
-                    <td className="py-3 px-4 text-center">
-                      <span className="font-bold text-xs bg-slate-100 px-2.5 py-1 rounded-full text-slate-700">
+                    <td className="py-3.5 px-4 text-center">
+                      <span className="inline-block rounded-full border border-slate-200/60 bg-slate-100 px-2.5 py-0.5 font-mono text-xs font-semibold text-slate-700 shadow-2xs">
                         #{cat.order || 0}
                       </span>
                     </td>
 
                     {/* Home Featured Indicator */}
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-3.5 px-4 text-center">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-2xs ${
                           cat.isFeatured
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                            : "bg-slate-100 text-slate-500"
+                            ? "border-emerald-200/70 bg-emerald-50 text-emerald-700"
+                            : "border-slate-200/70 bg-slate-100 text-slate-600"
                         }`}
                       >
-                        {cat.isFeatured ? "Featured" : "Standard"}
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full shrink-0 ${
+                            cat.isFeatured ? "bg-emerald-500" : "bg-slate-400"
+                          }`}
+                        />
+                        <span>{cat.isFeatured ? "Featured" : "Standard"}</span>
                       </span>
                     </td>
 
                     {/* Active Status & Quick Toggle */}
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-3.5 px-4 text-center">
                       <button
+                        type="button"
                         onClick={() => handleToggle(cat.id)}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold shadow-2xs transition-all cursor-pointer ${
                           cat.isActive
-                            ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
-                            : "bg-rose-100 text-rose-800 hover:bg-rose-200"
+                            ? "border-emerald-200/80 bg-emerald-50 text-emerald-800 hover:bg-emerald-100/80"
+                            : "border-rose-200/80 bg-rose-50 text-rose-800 hover:bg-rose-100/80"
                         }`}
-                        title="Click to toggle visibility"
+                        title="Click to toggle storefront visibility"
                       >
-                        {cat.isActive ? <Eye size={12} /> : <EyeOff size={12} />}
+                        {cat.isActive ? (
+                          <Eye className="h-3.5 w-3.5 text-emerald-600" />
+                        ) : (
+                          <EyeOff className="h-3.5 w-3.5 text-rose-600" />
+                        )}
                         <span>{cat.isActive ? "Active" : "Inactive"}</span>
                       </button>
                     </td>
 
                     {/* Actions */}
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="py-3.5 px-4 sm:px-5 text-right">
+                      <div className="flex items-center justify-end gap-1">
                         <button
+                          type="button"
                           onClick={() => handleOpenEdit(cat)}
-                          className="p-1.5 rounded-lg text-slate-500 hover:text-[#14232E] hover:bg-slate-100 transition-colors cursor-pointer"
+                          className="rounded-lg border border-transparent p-1.5 text-slate-500 transition-colors hover:border-slate-200 hover:bg-slate-100 hover:text-slate-900 cursor-pointer shadow-2xs"
                           title="Edit Category"
+                          aria-label="Edit Category"
                         >
-                          <Edit2 size={16} />
+                          <Edit2 className="h-4 w-4" />
                         </button>
                         <button
+                          type="button"
                           onClick={() => setCategoryToDelete(cat.id)}
-                          className="p-1.5 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                          className="rounded-lg border border-transparent p-1.5 text-slate-400 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 cursor-pointer shadow-2xs"
                           title="Delete Category"
+                          aria-label="Delete Category"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </td>
@@ -305,15 +371,19 @@ export const CategoryList = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title={editingCategory ? `Edit Category: ${editingCategory.name}` : "Create New Category"}
+        title={
+          editingCategory
+            ? `Edit Category: ${editingCategory.name}`
+            : "Create New Category"
+        }
         description="Configure product category details, route link, and display priority"
         maxWidth="lg"
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Category Name *
+              <label className="mb-1 block text-xs font-semibold text-slate-700">
+                Category Name <span className="text-[#E4232C]">*</span>
               </label>
               <input
                 type="text"
@@ -326,13 +396,13 @@ export const CategoryList = () => {
                   }
                 }}
                 placeholder="e.g. Eyeglasses"
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#14232E]"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#E4232C] focus:outline-none focus:ring-2 focus:ring-[#E4232C]/20 transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                URL Slug *
+              <label className="mb-1 block text-xs font-semibold text-slate-700">
+                URL Slug <span className="text-[#E4232C]">*</span>
               </label>
               <input
                 type="text"
@@ -340,14 +410,14 @@ export const CategoryList = () => {
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 placeholder="e.g. eyeglasses"
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-mono focus:outline-none focus:border-[#14232E]"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 font-mono text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#E4232C] focus:outline-none focus:ring-2 focus:ring-[#E4232C]/20 transition-colors"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">
                 Subtitle / Slogan
               </label>
               <input
@@ -355,12 +425,12 @@ export const CategoryList = () => {
                 value={subtitle}
                 onChange={(e) => setSubtitle(e.target.value)}
                 placeholder="e.g. Classic / Modern / Everyday"
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#14232E]"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#E4232C] focus:outline-none focus:ring-2 focus:ring-[#E4232C]/20 transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">
                 Display Order
               </label>
               <input
@@ -368,58 +438,65 @@ export const CategoryList = () => {
                 min="0"
                 value={order}
                 onChange={(e) => setOrder(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#14232E]"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#E4232C] focus:outline-none focus:ring-2 focus:ring-[#E4232C]/20 transition-colors"
               />
             </div>
           </div>
 
           {/* Category Image Upload (Multer, Max 2MB) */}
-          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+          <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 space-y-3 sm:p-4">
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-bold text-slate-800">
-                Category Image *
+              <label className="block text-xs font-semibold text-slate-800">
+                Category Image <span className="text-[#E4232C]">*</span>
               </label>
-              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                Multer Server Storage • Max 2MB
+              <span className="rounded-full border border-emerald-200/70 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
+                Multer Storage • Max 2MB
               </span>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-lg border border-slate-200 bg-white p-1 flex items-center justify-center shrink-0 overflow-hidden">
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-2xs">
                 {imageUrl ? (
                   <img
                     src={imageUrl}
                     alt="Category Preview"
-                    className="w-full h-full object-cover rounded"
-                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                    className="h-full w-full object-contain rounded"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
                   />
                 ) : (
-                  <Layers className="w-5 h-5 text-slate-300" />
+                  <Layers className="h-6 w-6 text-slate-300" />
                 )}
               </div>
 
-              <div className="flex-1 space-y-1.5">
+              <div className="flex-1 space-y-2">
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/avif"
                   ref={catFileInputRef}
                   className="hidden"
-                  onChange={(e) => handleCategoryFileUpload(e.target.files?.[0])}
+                  onChange={(e) =>
+                    handleCategoryFileUpload(e.target.files?.[0])
+                  }
                 />
                 <button
                   type="button"
                   disabled={isUploadingImage}
                   onClick={() => catFileInputRef.current?.click()}
-                  className="w-full py-1.5 px-3 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-xs font-bold text-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isUploadingImage ? (
                     <>
-                      <Loader2 size={13} className="animate-spin text-[#E4232C]" />
+                      <Loader2
+                        className="animate-spin text-[#E4232C]"
+                        size={13}
+                      />
                       <span>Uploading to Server (Max 2MB)...</span>
                     </>
                   ) : (
                     <>
-                      <UploadCloud size={13} className="text-slate-500" />
+                      <UploadCloud className="text-slate-500" size={14} />
                       <span>Upload Category Image File (Max 2MB)</span>
                     </>
                   )}
@@ -430,14 +507,14 @@ export const CategoryList = () => {
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
                   placeholder="Or paste server image URL"
-                  className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-600 focus:outline-none focus:border-[#14232E]"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 focus:border-[#E4232C] focus:outline-none focus:ring-2 focus:ring-[#E4232C]/20 transition-colors"
                 />
               </div>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="mb-1 block text-xs font-semibold text-slate-700">
               Target Route Link
             </label>
             <input
@@ -445,12 +522,12 @@ export const CategoryList = () => {
               value={link}
               onChange={(e) => setLink(e.target.value)}
               placeholder="e.g. /eyeglasses or /shop"
-              className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#14232E]"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 font-mono text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#E4232C] focus:outline-none focus:ring-2 focus:ring-[#E4232C]/20 transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="mb-1 block text-xs font-semibold text-slate-700">
               Description (Optional)
             </label>
             <textarea
@@ -458,37 +535,42 @@ export const CategoryList = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Brief overview of products included in this category..."
-              className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#14232E]"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#E4232C] focus:outline-none focus:ring-2 focus:ring-[#E4232C]/20 transition-colors resize-none"
             />
           </div>
 
-          <div className="flex items-center gap-6 pt-1">
-            <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-semibold text-slate-700">
+          <div className="flex flex-wrap items-center gap-6 pt-1">
+            <label className="flex cursor-pointer select-none items-center gap-2 text-xs font-semibold text-slate-700">
               <input
                 type="checkbox"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-300 accent-[#E4232C] cursor-pointer"
+                className="h-4 w-4 rounded border-slate-300 accent-[#E4232C] cursor-pointer"
               />
               <span>Active in Storefront</span>
             </label>
 
-            <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-semibold text-slate-700">
+            <label className="flex cursor-pointer select-none items-center gap-2 text-xs font-semibold text-slate-700">
               <input
                 type="checkbox"
                 checked={isFeatured}
                 onChange={(e) => setIsFeatured(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-300 accent-[#E4232C] cursor-pointer"
+                className="h-4 w-4 rounded border-slate-300 accent-[#E4232C] cursor-pointer"
               />
               <span>Featured on Homepage</span>
             </label>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
             <Button variant="outline" type="button" onClick={handleCloseModal}>
               Cancel
             </Button>
-            <Button variant="secondary" type="submit" loading={isSubmitting}>
+            <Button
+              variant="secondary"
+              type="submit"
+              isLoading={isSubmitting}
+              className="shadow-xs"
+            >
               {editingCategory ? "Save Changes" : "Create Category"}
             </Button>
           </div>

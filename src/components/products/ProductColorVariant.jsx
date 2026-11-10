@@ -37,7 +37,9 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
     if (!file) return;
 
     if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      toast.error(`File "${file.name}" exceeds the 2MB size limit. Please upload an image under 2MB.`);
+      toast.error(
+        `File "${file.name}" exceeds the 2MB size limit. Please upload an image under 2MB.`
+      );
       return;
     }
 
@@ -45,7 +47,9 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
     try {
       const data = await uploadService.uploadImage(file, "products");
       handleImageChange(key, data.url);
-      toast.success(`${key.charAt(0).toUpperCase() + key.slice(1)} image uploaded successfully`);
+      toast.success(
+        `${key.charAt(0).toUpperCase() + key.slice(1)} image uploaded successfully`
+      );
     } catch (err) {
       toast.error(err.message || "Failed to upload image to server.");
     } finally {
@@ -92,26 +96,33 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             {colors.map((color) => {
               const imgs =
-                typeof color.images === "object" && color.images !== null && !Array.isArray(color.images)
+                typeof color.images === "object" &&
+                color.images !== null &&
+                !Array.isArray(color.images)
                   ? color.images
-                  : { front: color.images?.[0] || color.image || "", side: color.images?.[1] || "", angle: color.images?.[2] || "" };
+                  : {
+                      front:
+                        color.images?.[0] || color.image || "",
+                      side: color.images?.[1] || "",
+                      angle: color.images?.[2] || "",
+                    };
 
               return (
                 <div
                   key={color.id || color.name}
-                  className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between gap-3"
+                  className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs transition-all hover:border-slate-300 flex flex-col justify-between gap-3.5"
                 >
                   {/* Top Bar: Tone, Name, Hex & Delete */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2.5">
                       <span
-                        className="w-4 h-4 rounded-full border border-slate-300 shadow-inner shrink-0"
+                        className="h-4.5 w-4.5 rounded-full border border-slate-300/80 shadow-2xs shrink-0"
                         style={{ backgroundColor: color.hex }}
                       />
                       <span className="font-bold text-sm text-slate-900">
                         {color.name}
                       </span>
-                      <span className="text-[11px] font-mono text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">
+                      <span className="text-[11px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200/60">
                         {color.hex}
                       </span>
                     </div>
@@ -119,7 +130,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
                     <button
                       type="button"
                       onClick={() => handleRemoveColor(color.id)}
-                      className="text-slate-400 hover:text-rose-600 transition-colors p-1 rounded-md hover:bg-rose-50 cursor-pointer"
+                      className="text-slate-400 hover:text-rose-600 transition-colors p-1.5 rounded-lg hover:bg-rose-50 cursor-pointer shadow-2xs"
                       title={`Delete ${color.name} variant`}
                     >
                       <Trash2 size={15} />
@@ -127,14 +138,14 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
                   </div>
 
                   {/* Multi-Angle Images Box */}
-                  <div className="bg-slate-50/70 p-2.5 rounded-lg border border-slate-100">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                  <div className="bg-slate-50/70 p-3 rounded-lg border border-slate-100">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
                       Variant Perspectives
                     </span>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2.5">
                       {/* Front */}
                       <div className="flex flex-col items-center">
-                        <div className="w-full h-14 rounded-md border border-slate-200 bg-white p-1 flex items-center justify-center overflow-hidden">
+                        <div className="w-full h-14 rounded-lg border border-slate-200 bg-white p-1 flex items-center justify-center overflow-hidden shadow-2xs">
                           {imgs.front ? (
                             <img
                               src={imgs.front}
@@ -145,7 +156,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
                               }}
                             />
                           ) : (
-                            <span className="text-[9px] text-slate-300">
+                            <span className="text-[10px] text-slate-300">
                               No front
                             </span>
                           )}
@@ -157,7 +168,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
 
                       {/* Side */}
                       <div className="flex flex-col items-center">
-                        <div className="w-full h-14 rounded-md border border-slate-200 bg-white p-1 flex items-center justify-center overflow-hidden">
+                        <div className="w-full h-14 rounded-lg border border-slate-200 bg-white p-1 flex items-center justify-center overflow-hidden shadow-2xs">
                           {imgs.side ? (
                             <img
                               src={imgs.side}
@@ -168,7 +179,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
                               }}
                             />
                           ) : (
-                            <span className="text-[9px] text-slate-300">
+                            <span className="text-[10px] text-slate-300">
                               No side
                             </span>
                           )}
@@ -180,7 +191,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
 
                       {/* Angle */}
                       <div className="flex flex-col items-center">
-                        <div className="w-full h-14 rounded-md border border-slate-200 bg-white p-1 flex items-center justify-center overflow-hidden">
+                        <div className="w-full h-14 rounded-lg border border-slate-200 bg-white p-1 flex items-center justify-center overflow-hidden shadow-2xs">
                           {imgs.angle ? (
                             <img
                               src={imgs.angle}
@@ -191,7 +202,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
                               }}
                             />
                           ) : (
-                            <span className="text-[9px] text-slate-300">
+                            <span className="text-[10px] text-slate-300">
                               No angle
                             </span>
                           )}
@@ -210,13 +221,13 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
       </div>
 
       {/* Add Color Variant form */}
-      <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+      <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-4 sm:p-5 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <span className="font-bold text-xs text-slate-800 uppercase tracking-wider">
             Add Color Variant & Angles
           </span>
-          <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-            Stored via Multer on server • Max 2MB per image
+          <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/70 shadow-2xs">
+            Multer Storage • Max 2MB per image
           </span>
         </div>
 
@@ -235,14 +246,14 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
               Color Tone
             </label>
-            <div className="flex items-center gap-2 h-9 px-2 bg-white rounded-lg border border-slate-300">
+            <div className="flex items-center gap-2.5 h-9.5 px-3 bg-white rounded-lg border border-slate-300 shadow-2xs">
               <input
                 type="color"
                 value={newColorHex}
                 onChange={(e) => setNewColorHex(e.target.value)}
                 className="w-6 h-6 rounded border-0 p-0 cursor-pointer bg-transparent"
               />
-              <span className="text-xs font-mono text-slate-600 font-medium">
+              <span className="text-xs font-mono text-slate-700 font-medium">
                 {newColorHex}
               </span>
             </div>
@@ -250,7 +261,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
         </div>
 
         {/* 3 Perspectives: Front, Side, Angle */}
-        <div className="space-y-2 pt-1 border-t border-slate-200/60">
+        <div className="space-y-2.5 pt-2 border-t border-slate-200/70">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-700 block">
               Perspective Images:
@@ -260,9 +271,9 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
             {/* Front View */}
-            <div className="space-y-2 bg-white p-3 rounded-lg border border-slate-200 flex flex-col justify-between">
+            <div className="space-y-2.5 bg-white p-3.5 rounded-xl border border-slate-200/90 shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-slate-800">
                   Front View (Primary) *
@@ -288,7 +299,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
                   type="button"
                   disabled={uploadingState.front}
                   onClick={() => fileInputRefs.front.current?.click()}
-                  className="w-full py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-dashed border-slate-300 rounded text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  className="w-full py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-dashed border-slate-300 rounded-lg text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
                 >
                   {uploadingState.front ? (
                     <>
@@ -312,7 +323,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
             </div>
 
             {/* Side View */}
-            <div className="space-y-2 bg-white p-3 rounded-lg border border-slate-200 flex flex-col justify-between">
+            <div className="space-y-2.5 bg-white p-3.5 rounded-xl border border-slate-200/90 shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-slate-800">
                   Side View (Temples)
@@ -338,7 +349,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
                   type="button"
                   disabled={uploadingState.side}
                   onClick={() => fileInputRefs.side.current?.click()}
-                  className="w-full py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-dashed border-slate-300 rounded text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  className="w-full py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-dashed border-slate-300 rounded-lg text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
                 >
                   {uploadingState.side ? (
                     <>
@@ -362,7 +373,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
             </div>
 
             {/* Angle View */}
-            <div className="space-y-2 bg-white p-3 rounded-lg border border-slate-200 flex flex-col justify-between">
+            <div className="space-y-2.5 bg-white p-3.5 rounded-xl border border-slate-200/90 shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-slate-800">
                   Angle View (Perspective)
@@ -388,7 +399,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
                   type="button"
                   disabled={uploadingState.angle}
                   onClick={() => fileInputRefs.angle.current?.click()}
-                  className="w-full py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-dashed border-slate-300 rounded text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  className="w-full py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-dashed border-slate-300 rounded-lg text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
                 >
                   {uploadingState.angle ? (
                     <>
@@ -414,7 +425,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
         </div>
 
         {/* Submit Variant Button */}
-        <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
+        <div className="flex items-center justify-between pt-2 border-t border-slate-200/70">
           <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
             <ImageIcon size={13} />
             <span>
@@ -429,6 +440,7 @@ const ProductColorVariant = ({ colors = [], onChange }) => {
             onClick={handleAddColor}
             disabled={!newColorName.trim()}
             icon={<Plus className="w-4 h-4" />}
+            className="shadow-xs"
           >
             Add Color Variant
           </Button>

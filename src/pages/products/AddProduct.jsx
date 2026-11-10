@@ -5,10 +5,12 @@ import { useProducts } from "../../hooks/useProducts";
 import { PageContainer } from "../../components/layout/PageContainer";
 import { PageHeader } from "../../components/common/PageHeader";
 import { ProductForm } from "../../components/products/ProductForm";
+
 const AddProduct = () => {
   const navigate = useNavigate();
   const { addProduct } = useProducts();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (data) => {
     setIsSubmitting(true);
     try {
@@ -16,27 +18,30 @@ const AddProduct = () => {
       toast.success("Product added successfully");
       navigate("/products");
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Failed to create product");
+      toast.error(
+        err.response?.data?.message || err.message || "Failed to create product"
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
-  return <PageContainer className="max-w-4xl">
+
+  return (
+    <PageContainer className="max-w-5xl">
       <PageHeader
-    title="Add Product"
-    description="Introduce a new eyewear model, lens package, or optical accessory"
-    backUrl="/products"
-  />
+        title="Add Product"
+        description="Introduce a new eyewear model, lens package, or optical accessory to the store catalog"
+        backUrl="/products"
+      />
 
       <ProductForm
-    onSubmit={handleSubmit}
-    isLoading={isSubmitting}
-    mode="add"
-  />
-    </PageContainer>;
+        onSubmit={handleSubmit}
+        isLoading={isSubmitting}
+        mode="add"
+      />
+    </PageContainer>
+  );
 };
-var stdin_default = AddProduct;
-export {
-  AddProduct,
-  stdin_default as default
-};
+
+export default AddProduct;
+export { AddProduct };

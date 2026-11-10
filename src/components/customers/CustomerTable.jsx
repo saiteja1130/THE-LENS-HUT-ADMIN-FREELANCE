@@ -1,83 +1,113 @@
 import { useNavigate } from "react-router-dom";
-import { Eye } from "lucide-react";
+import { Eye, MapPin } from "lucide-react";
 import { Table } from "../common/Table";
 import { formatDate } from "../../utils/formatDate";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { Button } from "../common/Button";
-const CustomerTable = ({
-  customers,
-  isLoading = false
-}) => {
+
+const CustomerTable = ({ customers = [], isLoading = false }) => {
   const navigate = useNavigate();
+
   const columns = [
     {
       header: "Customer",
-      render: (customer) => <div className="flex items-center gap-3">
-          {customer.avatarUrl ? <img
-        src={customer.avatarUrl}
-        alt={customer.name}
-        className="w-9 h-9 rounded-full object-cover border border-slate-200"
-      /> : <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center text-xs">
-              {customer.name.charAt(0)}
-            </div>}
-          <div>
-            <div className="font-semibold text-slate-900">{customer.name}</div>
-            <div className="text-xs text-slate-400">{customer.email}</div>
+      className: "w-64 min-w-[220px]",
+      render: (customer) => (
+        <div className="flex items-center gap-3">
+          {customer.avatarUrl ? (
+            <img
+              src={customer.avatarUrl}
+              alt={customer.name}
+              className="h-10 w-10 shrink-0 rounded-full border border-slate-200/80 object-cover shadow-2xs"
+            />
+          ) : (
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#1E3545] bg-[#14232E] text-xs font-bold text-white shadow-2xs">
+              {customer.name?.charAt(0) || "C"}
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <button
+              type="button"
+              onClick={() => navigate(`/customers/${customer.id}`)}
+              className="block truncate text-left text-sm font-semibold text-slate-900 transition-colors hover:text-[#E4232C] cursor-pointer"
+            >
+              {customer.name}
+            </button>
+            <div className="truncate text-xs text-slate-400 mt-0.5">
+              {customer.email}
+            </div>
           </div>
         </div>
+      ),
     },
     {
       header: "Phone",
       accessor: "phone",
-      className: "text-xs text-slate-600 whitespace-nowrap"
+      className: "whitespace-nowrap font-mono text-xs text-slate-600",
     },
     {
       header: "Date Joined",
-      render: (customer) => <span className="text-xs text-slate-500 whitespace-nowrap">
-          {formatDate(customer.dateJoined)}
-        </span>
+      className: "whitespace-nowrap text-xs text-slate-500",
+      render: (customer) => formatDate(customer.dateJoined),
     },
     {
       header: "Total Orders",
-      render: (customer) => <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-800">
-          {customer.totalOrders} {customer.totalOrders === 1 ? "order" : "orders"}
+      className: "whitespace-nowrap text-center",
+      headerClassName: "text-center",
+      render: (customer) => (
+        <span className="inline-flex items-center rounded-full border border-slate-200/60 bg-slate-100/90 px-2.5 py-0.5 text-xs font-semibold text-slate-700 shadow-2xs">
+          {customer.totalOrders}{" "}
+          {customer.totalOrders === 1 ? "order" : "orders"}
         </span>
+      ),
     },
     {
       header: "Total Spent",
-      render: (customer) => <span className="font-semibold text-slate-900">
-          {formatCurrency(customer.totalSpent)}
-        </span>
+      className: "whitespace-nowrap font-bold text-slate-900 tabular-nums text-sm",
+      render: (customer) => formatCurrency(customer.totalSpent),
     },
     {
       header: "Location",
-      render: (customer) => <span className="text-xs text-slate-500">
-          {customer.address ? `${customer.address.city}, ${customer.address.state}` : "India"}
+      className: "whitespace-nowrap text-xs text-slate-500",
+      render: (customer) => (
+        <span className="inline-flex items-center gap-1">
+          <MapPin className="h-3 w-3 text-slate-400 shrink-0" />
+          <span>
+            {customer.address
+              ? `${customer.address.city}, ${customer.address.state}`
+              : "India"}
+          </span>
         </span>
+      ),
     },
     {
       header: "Actions",
-      className: "text-right",
+      className: "text-right whitespace-nowrap",
       headerClassName: "text-right",
-      render: (customer) => <Button
-        variant="outline"
-        size="sm"
-        onClick={() => navigate(`/customers/${customer.id}`)}
-        icon={<Eye className="w-3.5 h-3.5" />}
-      >
+      render: (customer) => (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(`/customers/${customer.id}`)}
+          icon={<Eye className="h-3.5 w-3.5" />}
+          className="shadow-2xs hover:border-slate-300"
+        >
           View Profile
         </Button>
-    }
+      ),
+    },
   ];
-  return <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+
+  return (
+    <div className="overflow-hidden rounded-t-xl border border-slate-200/80 bg-white shadow-xs">
       <Table
-    columns={columns}
-    data={customers}
-    keyExtractor={(item) => item.id}
-    isLoading={isLoading}
-  />
-    </div>;
+        columns={columns}
+        data={customers}
+        keyExtractor={(item) => item.id}
+        isLoading={isLoading}
+      />
+    </div>
+  );
 };
-export {
-  CustomerTable
-};
+
+export { CustomerTable };
