@@ -14,9 +14,9 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="hidden lg:flex w-64 flex-col bg-[#14232E] text-slate-200 border-r border-[#1E3545] shrink-0 select-none">
+    <aside className="hidden lg:flex w-64 flex-col bg-[#14232E] text-slate-200 border-r border-[#1E3545] shrink-0 select-none sticky top-0 h-screen max-h-screen overflow-hidden z-20">
       {/* Brand Header */}
-      <div className="flex h-16 items-center px-5 border-b border-[#1E3545] gap-3">
+      <div className="flex h-16 items-center px-5 border-b border-[#1E3545] gap-3 shrink-0">
         <div className="flex items-center justify-center bg-white px-2 py-1 rounded-lg shadow-xs border border-white/20 shrink-0">
           <BrandLogo size="xs" className="h-6" />
         </div>
@@ -31,7 +31,7 @@ const Sidebar = () => {
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 space-y-1 px-3 py-5 overflow-y-auto">
+      <nav className="flex-1 min-h-0 space-y-1 px-3 py-5 overflow-y-auto">
         <div className="px-3 pb-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
           Main Navigation
         </div>
@@ -68,7 +68,7 @@ const Sidebar = () => {
       </nav>
 
       {/* Admin User Profile & Sign Out */}
-      <div className="p-3.5 border-t border-[#1E3545] bg-[#0E1922]/90">
+      <div className="p-3.5 border-t border-[#1E3545] bg-[#0E1922]/90 shrink-0">
         <div className="flex items-center gap-3 px-2 py-2 mb-2 rounded-lg bg-[#14232E]/60 border border-[#1E3545]/60">
           {admin?.avatarUrl ? (
             <img

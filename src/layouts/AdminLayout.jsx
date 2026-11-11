@@ -5,7 +5,7 @@ import { Header } from "../components/layout/Header";
 import { MobileSidebar } from "../components/layout/MobileSidebar";
 const AdminLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  return <div className="flex min-h-screen bg-[#FAFAFA]">
+  return <div className="flex h-screen w-full overflow-hidden bg-[#FAFAFA]">
       {
     /* Desktop Sidebar */
   }
@@ -22,7 +22,7 @@ const AdminLayout = () => {
       {
     /* Main Area */
   }
-      <div className="flex flex-1 flex-col min-w-0">
+      <div className="flex flex-1 flex-col min-w-0 h-screen overflow-hidden">
         <Header onOpenMobileMenu={() => setMobileMenuOpen(true)} />
         <main className="flex-1 overflow-y-auto">
           <Outlet />
