@@ -18,6 +18,7 @@ import { ProductColorVariant } from "./ProductColorVariant";
 import { CategoryConfigurationSection } from "./CategoryConfigurationSection";
 import { LiveProductPreviewModal } from "./LiveProductPreviewModal";
 import { categoryService } from "../../services/categoryService";
+import { brandService } from "../../services/brandService";
 
 const ProductForm = ({
   initialData,
@@ -28,9 +29,11 @@ const ProductForm = ({
   const navigate = useNavigate();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  // Categories fetched from backend database
+  // Categories and Brands fetched from backend database
   const [dbCategories, setDbCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [dbBrands, setDbBrands] = useState([]);
+  const [loadingBrands, setLoadingBrands] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -45,6 +48,19 @@ const ProductForm = ({
       .catch(() => {
         if (isMounted) setLoadingCategories(false);
       });
+
+    brandService
+      .getActiveBrands()
+      .then((brands) => {
+        if (isMounted) {
+          setDbBrands(brands || []);
+          setLoadingBrands(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setLoadingBrands(false);
+      });
+
     return () => {
       isMounted = false;
     };
@@ -343,13 +359,48 @@ const ProductForm = ({
               {...register("sku", { required: "SKU is required" })}
             />
 
-            <Input
-              label="Brand Name"
-              placeholder="e.g. The Lens Hut Reserve, Ray-Ban"
-              required
-              error={errors.brand?.message}
-              {...register("brand", { required: "Brand name is required" })}
-            />
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700 uppercase">
+                  Brand Name <span className="text-rose-500">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => navigate("/brands")}
+                  className="text-[11px] font-semibold text-[#E4232C] hover:underline cursor-pointer"
+                >
+                  + Add Brand
+                </button>
+              </div>
+              <div className="relative">
+                <select
+                  className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 transition-colors focus:border-[#E4232C] focus:outline-none appearance-none cursor-pointer ${
+                    errors.brand ? "border-rose-500" : "border-slate-300"
+                  }`}
+                  {...register("brand", { required: "Brand name is required" })}
+                >
+                  <option value="">
+                    {loadingBrands ? "Loading brands..." : "Select Brand *"}
+                  </option>
+                  {dbBrands.map((b) => (
+                    <option key={b.id || b._id || b.slug} value={b.name}>
+                      {b.name}
+                    </option>
+                  ))}
+                  {initialData?.brand && !dbBrands.some((b) => b.name === initialData.brand) && (
+                    <option value={initialData.brand}>{initialData.brand}</option>
+                  )}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                  <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                    <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                  </svg>
+                </div>
+              </div>
+              {errors.brand && (
+                <p className="mt-1 text-xs text-rose-600">{errors.brand.message}</p>
+              )}
+            </div>
 
             <Select
               label="Target Gender"

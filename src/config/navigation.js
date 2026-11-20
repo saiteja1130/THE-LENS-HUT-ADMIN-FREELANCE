@@ -2,6 +2,7 @@ import {
   LayoutDashboard,
   Glasses,
   Layers,
+  Award,
   ShoppingBag,
   Users,
   Ticket,
@@ -24,6 +25,11 @@ const navigationItems = [
     label: "Categories",
     path: "/categories",
     icon: Layers
+  },
+  {
+    label: "Brands",
+    path: "/brands",
+    icon: Award
   },
   {
     label: "Orders",
