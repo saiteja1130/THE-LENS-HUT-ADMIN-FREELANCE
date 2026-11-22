@@ -36,7 +36,8 @@ const CouponTable = ({
 
   const getCouponStatus = (coupon) => {
     const today = new Date().toISOString().split("T")[0];
-    const isExpired = coupon.expiryDate < today;
+    const isExpired = String(coupon.expiryDate).slice(0, 10) < today;
+    const isScheduled = String(coupon.startDate).slice(0, 10) > today;
 
     if (!coupon.isActive) {
       return {
@@ -51,6 +52,14 @@ const CouponTable = ({
         label: "Expired",
         badgeClass: "bg-rose-50 text-rose-700 border-rose-200",
         dotClass: "bg-rose-500"
+      };
+    }
+
+    if (isScheduled) {
+      return {
+        label: "Scheduled",
+        badgeClass: "bg-blue-50 text-blue-700 border-blue-200",
+        dotClass: "bg-blue-500"
       };
     }
 
@@ -116,9 +125,10 @@ const CouponTable = ({
               coupons.map((coupon) => {
                 const { label: statusLabel, badgeClass, dotClass } = getCouponStatus(coupon);
                 const isPercentage = coupon.discountType === "Percentage";
+                const isBogo = coupon.discountType === "Buy One Get One";
                 const isCopied = copiedCode === coupon.code;
                 const today = new Date().toISOString().split("T")[0];
-                const isExpired = coupon.expiryDate < today;
+                const isExpired = String(coupon.expiryDate).slice(0, 10) < today;
 
                 return (
                   <tr
@@ -155,7 +165,9 @@ const CouponTable = ({
                             ? "bg-indigo-50 text-indigo-700 border-indigo-200" 
                             : "bg-emerald-50 text-emerald-700 border-emerald-200"
                         }`}>
-                          {isPercentage ? (
+                          {isBogo ? (
+                            <>{"Buy 1 Get 1"}</>
+                          ) : isPercentage ? (
                             <>
                               <Percent className="w-3 h-3 mr-1" />
                               {coupon.discountValue}% OFF
@@ -169,7 +181,7 @@ const CouponTable = ({
                         </span>
                       </div>
                       <span className="text-[11px] text-slate-400 block mt-0.5">
-                        {isPercentage ? "Percentage off" : "Fixed reduction"}
+                        {isBogo ? "Same product and options" : isPercentage ? "Percentage off" : "Fixed reduction"}
                       </span>
                     </td>
 

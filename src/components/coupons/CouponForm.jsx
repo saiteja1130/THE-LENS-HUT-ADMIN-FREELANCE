@@ -16,6 +16,8 @@ import { Button } from "../common/Button";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { formatDate } from "../../utils/formatDate";
 
+const toInputDate = (value) => value ? new Date(value).toISOString().slice(0, 10) : undefined;
+
 const CouponForm = ({
   initialData,
   onSubmit,
@@ -32,9 +34,10 @@ const CouponForm = ({
       code: initialData?.code || "",
       discountType: initialData?.discountType || "Fixed Amount",
       discountValue: initialData?.discountValue ?? 200,
+      maxDiscount: initialData?.maxDiscount ?? "",
       minOrderAmount: initialData?.minOrderAmount ?? 999,
-      startDate: initialData?.startDate || new Date().toISOString().split("T")[0],
-      expiryDate: initialData?.expiryDate || new Date(Date.now() + 30 * 864e5).toISOString().split("T")[0],
+      startDate: toInputDate(initialData?.startDate) || new Date().toISOString().split("T")[0],
+      expiryDate: toInputDate(initialData?.expiryDate) || new Date(Date.now() + 30 * 864e5).toISOString().split("T")[0],
       isActive: initialData?.isActive ?? true
     }
   });
@@ -51,7 +54,8 @@ const CouponForm = ({
     await onSubmit({
       code: data.code.toUpperCase().trim(),
       discountType: data.discountType,
-      discountValue: Number(data.discountValue),
+      discountValue: data.discountType === "Buy One Get One" ? 0 : Number(data.discountValue),
+      maxDiscount: data.discountType === "Percentage" && data.maxDiscount !== "" ? Number(data.maxDiscount) : null,
       minOrderAmount: Number(data.minOrderAmount),
       startDate: data.startDate,
       expiryDate: data.expiryDate,
@@ -62,6 +66,7 @@ const CouponForm = ({
   const previewCode = (watchedCode || "PROMOCODE").toUpperCase().trim();
   const previewValue = watchedDiscountValue || 0;
   const isPercentage = selectedDiscountType === "Percentage";
+  const isBogo = selectedDiscountType === "Buy One Get One";
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
@@ -74,7 +79,7 @@ const CouponForm = ({
                 ? "bg-indigo-50 text-indigo-600 border border-indigo-100" 
                 : "bg-emerald-50 text-emerald-600 border border-emerald-100"
             }`}>
-              {isPercentage ? <Percent className="w-6 h-6" /> : <IndianRupee className="w-6 h-6" />}
+              {isBogo ? <Sparkles className="w-6 h-6" /> : isPercentage ? <Percent className="w-6 h-6" /> : <IndianRupee className="w-6 h-6" />}
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -90,14 +95,14 @@ const CouponForm = ({
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                {isPercentage ? "Percentage Discount Voucher" : "Fixed Amount Cart Voucher"}
+                {isBogo ? "Same Product and Options Buy One Get One" : isPercentage ? "Percentage Discount Voucher" : "Fixed Amount Cart Voucher"}
               </p>
             </div>
           </div>
 
           <div className="text-left sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200 w-full sm:w-auto">
             <span className="text-xl sm:text-2xl font-black text-slate-900">
-              {isPercentage ? `${previewValue}% OFF` : `${formatCurrency(previewValue || 0)} OFF`}
+              {isBogo ? "BUY 1 GET 1" : isPercentage ? `${previewValue}% OFF` : `${formatCurrency(previewValue || 0)} OFF`}
             </span>
             <p className="text-[11px] text-slate-500 mt-0.5">
               Min. spend: {formatCurrency(watchedMinOrder || 0)}
@@ -145,7 +150,8 @@ const CouponForm = ({
             required
             options={[
               { value: "Fixed Amount", label: "Fixed Amount (₹ off)" },
-              { value: "Percentage", label: "Percentage (% off)" }
+              { value: "Percentage", label: "Percentage (% off)" },
+              { value: "Buy One Get One", label: "Buy One Get One (same product & options)" }
             ]}
             helperText="Select flat reduction or percentage off"
             {...register("discountType")}
@@ -165,7 +171,7 @@ const CouponForm = ({
             type="number"
             label={selectedDiscountType === "Percentage" ? "Discount Percentage (%)" : "Discount Amount (₹)"}
             placeholder={selectedDiscountType === "Percentage" ? "20" : "500"}
-            required
+            required={selectedDiscountType !== "Buy One Get One"}
             helperText={
               selectedDiscountType === "Percentage" 
                 ? "Percentage off cart total (e.g., 10% to 100%)" 
@@ -173,8 +179,8 @@ const CouponForm = ({
             }
             error={errors.discountValue?.message}
             {...register("discountValue", {
-              required: "Discount value is required",
-              min: { value: 1, message: "Must be greater than 0" },
+              required: selectedDiscountType !== "Buy One Get One" ? "Discount value is required" : false,
+              min: selectedDiscountType !== "Buy One Get One" ? { value: 1, message: "Must be greater than 0" } : undefined,
               max: selectedDiscountType === "Percentage" 
                 ? { value: 100, message: "Percentage cannot exceed 100%" } 
                 : undefined,
@@ -182,6 +188,11 @@ const CouponForm = ({
             })}
           />
 
+          {selectedDiscountType === "Percentage" && (
+            <Input type="number" label="Maximum Discount (₹, optional)" placeholder="No cap" min="0"
+              helperText="Caps the percentage discount amount"
+              {...register("maxDiscount", { min: { value: 0, message: "Cannot be negative" } })} />
+          )}
           <Input
             type="number"
             label="Minimum Order Amount (₹)"

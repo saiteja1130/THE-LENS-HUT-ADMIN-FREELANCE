@@ -1,57 +1,49 @@
-const STORAGE_KEY = "thelenshut_coupons";
-const loadCoupons = () => {
-  const data = localStorage.getItem(STORAGE_KEY);
-  if (!data) {
-    return [];
-  }
-  try {
-    const parsed = JSON.parse(data);
-    return Array.isArray(parsed) ? parsed.filter((c) => !c.id?.startsWith('cpn-00')) : [];
-  } catch {
-    return [];
-  }
-};
-const saveCoupons = (coupons) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(coupons));
-};
+import { api } from './api';
+
 const couponService = {
   getCoupons: async () => {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    return loadCoupons();
+    const res = await api.get('/coupons/admin/all');
+    if (res.data?.success && Array.isArray(res.data.data)) {
+      const serverCoupons = res.data.data;
+      if (serverCoupons.length || localStorage.getItem('thelenshut_coupons_migrated')) return serverCoupons;
+      try {
+        const legacyCoupons = JSON.parse(localStorage.getItem('thelenshut_coupons') || '[]');
+        for (const coupon of legacyCoupons) {
+          await api.post('/coupons', {
+            code: coupon.code,
+            discountType: coupon.discountType,
+            discountValue: coupon.discountValue,
+            minOrderAmount: coupon.minOrderAmount || 0,
+            startDate: coupon.startDate,
+            expiryDate: coupon.expiryDate,
+            isActive: coupon.isActive,
+          });
+        }
+      } catch (error) {
+        console.warn('[CouponService] Legacy coupon migration stopped:', error.message);
+      } finally {
+        localStorage.setItem('thelenshut_coupons_migrated', 'true');
+      }
+      const migrated = await api.get('/coupons/admin/all');
+      if (migrated.data?.success && Array.isArray(migrated.data.data)) return migrated.data.data;
+      return serverCoupons;
+    }
+    throw new Error(res.data?.message || 'Failed to load coupons');
   },
   createCoupon: async (couponData) => {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    const coupons = loadCoupons();
-    const newCoupon = {
-      ...couponData,
-      id: `cpn-${Date.now().toString(36)}`,
-      usageCount: 0
-    };
-    const updated = [newCoupon, ...coupons];
-    saveCoupons(updated);
-    return newCoupon;
+    const res = await api.post('/coupons', couponData);
+    if (res.data?.success && res.data.data) return res.data.data;
+    throw new Error(res.data?.message || 'Failed to create coupon');
   },
   updateCoupon: async (id, updates) => {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    const coupons = loadCoupons();
-    const index = coupons.findIndex((c) => c.id === id);
-    if (index === -1) {
-      throw new Error("Coupon not found");
-    }
-    const updatedCoupon = {
-      ...coupons[index],
-      ...updates
-    };
-    coupons[index] = updatedCoupon;
-    saveCoupons(coupons);
-    return updatedCoupon;
+    const res = await api.put(`/coupons/${id}`, updates);
+    if (res.data?.success && res.data.data) return res.data.data;
+    throw new Error(res.data?.message || 'Failed to update coupon');
   },
   deleteCoupon: async (id) => {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    const coupons = loadCoupons();
-    const filtered = coupons.filter((c) => c.id !== id);
-    saveCoupons(filtered);
-    return true;
+    const res = await api.delete(`/coupons/${id}`);
+    if (res.data?.success) return true;
+    throw new Error(res.data?.message || 'Failed to delete coupon');
   }
 };
 export {

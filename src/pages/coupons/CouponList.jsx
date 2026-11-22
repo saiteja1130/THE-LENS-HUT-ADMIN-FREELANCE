@@ -23,9 +23,10 @@ const CouponList = () => {
   const stats = useMemo(() => {
     const today = new Date().toISOString().split("T")[0];
     const total = coupons.length;
-    const active = coupons.filter((c) => c.isActive && c.expiryDate >= today).length;
-    const expired = coupons.filter((c) => c.expiryDate < today).length;
-    return { total, active, expired };
+    const active = coupons.filter((c) => c.isActive && String(c.startDate).slice(0, 10) <= today && String(c.expiryDate).slice(0, 10) >= today).length;
+    const expired = coupons.filter((c) => String(c.expiryDate).slice(0, 10) < today).length;
+    const scheduled = coupons.filter((c) => c.isActive && String(c.startDate).slice(0, 10) > today).length;
+    return { total, active, expired, scheduled };
   }, [coupons]);
 
   const handleOpenAdd = () => {
