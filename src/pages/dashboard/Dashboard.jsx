@@ -28,7 +28,7 @@ const Dashboard = () => {
   const isLoading = ordersLoading || productsLoading || customersLoading;
 
   const totalSales = orders.reduce((sum, order) => {
-    return order.orderStatus !== "Cancelled" ? sum + order.totalAmount : sum;
+    return order.paymentStatus === "Paid" && order.orderStatus !== "Cancelled" ? sum + (order.totalAmount || 0) : sum;
   }, 0);
 
   const totalOrdersCount = orders.length;
@@ -47,7 +47,7 @@ const Dashboard = () => {
     });
     if (orders && orders.length > 0) {
       orders.forEach((o) => {
-        if (o.orderStatus !== "Cancelled" && o.orderDate) {
+        if (o.paymentStatus === "Paid" && o.orderStatus !== "Cancelled" && o.orderDate) {
           const d = new Date(o.orderDate);
           const dayName = days[d.getDay()];
           if (map[dayName]) {
@@ -81,7 +81,7 @@ const Dashboard = () => {
     });
     if (orders && orders.length > 0) {
       orders.forEach((o) => {
-        if (o.orderStatus !== "Cancelled" && o.orderDate) {
+        if (o.paymentStatus === "Paid" && o.orderStatus !== "Cancelled" && o.orderDate) {
           const d = new Date(o.orderDate);
           const monthName = months[d.getMonth()];
           if (map[monthName]) {
