@@ -70,10 +70,24 @@ const StoreSettingsForm = ({
     label="Free Shipping Minimum Order (₹)"
     placeholder="999"
     required
-    helperText="Orders above this amount qualify for ₹0 delivery"
+    helperText="Orders at or above this amount qualify for free delivery"
     error={errors.freeShippingMinimum?.message}
     {...register("freeShippingMinimum", {
       required: "Free shipping minimum is required",
+      valueAsNumber: true,
+      min: { value: 0, message: "Cannot be negative" }
+    })}
+  />
+
+          <Input
+    type="number"
+    label="Standard Shipping Fee (₹)"
+    placeholder="99"
+    required
+    helperText="Charged when an order is below the free delivery minimum"
+    error={errors.standardShippingFee?.message}
+    {...register("standardShippingFee", {
+      required: "Standard shipping fee is required",
       valueAsNumber: true,
       min: { value: 0, message: "Cannot be negative" }
     })}

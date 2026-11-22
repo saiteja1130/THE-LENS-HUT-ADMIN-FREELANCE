@@ -18,7 +18,7 @@ const Settings = () => {
   return <PageContainer className="max-w-4xl">
       <PageHeader
     title="Settings"
-    description="Admin credentials, store contact information, and shipping thresholds"
+    description="Admin credentials, store contact information, delivery fees, and free delivery threshold"
   />
 
       <div className="space-y-8">
